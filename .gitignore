@@ -1,0 +1,153 @@
+# Miscellaneous
+*.class
+*.lock
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# AI Assistants & Editors
+.cursor/
+.roo/
+.windsurf/
+.roomodes
+.windsurfrules
+.cursorrules
+.copilot/
+.github/copilot/
+
+# Task Master AI & MCP
+.taskmaster/
+taskmaster.log
+*.taskmaster
+.tm/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Firebase
+**/firebase_options.dart
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Environment variables and secrets
+.env
+.env.local
+.env.staging
+.env.production
+**/*.key
+**/*.pem
+**/key.properties
+
+# iOS related
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Pods/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner.xcodeproj/xcuserdata/
+**/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Android related
+**/android/local.properties
+**/android/app/src/main/java/io/flutter/plugins/
+**/android/.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/key.properties
+*.jks
+
+# Windows
+**/windows/flutter/generated_plugin_registrant.cc
+
+# macOS
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Coverage
+coverage/
+
+# Symbols
+app.*.symbols
+
+# Exceptions to above rules (협업을 위해 포함해야 할 파일들)
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# OS-specific files
+Thumbs.db
+*.DS_Store
+
+# IDE and Editor files
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/.ropeproject
+
+# Keep workspace settings but ignore personal settings
+!.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Crash logs
+*.crash
+
+# Log files
+*.log
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.chopper.dart
+
+# Analysis
+.dartServer
+
+# FVM (Flutter Version Management)
+.fvm/flutter_sdk
+
+# Mason
+.mason/
+
+# Test coverage
+coverage/
+lcov.info
