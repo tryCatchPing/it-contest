@@ -1,5 +1,5 @@
 {
-  "dart.flutterSdkPath": null,
+  "dart.flutterSdkPath": ".fvm/versions/3.32.5",
   "dart.checkForSdkUpdates": false,
   "dart.previewFlutterUiGuides": true,
   "dart.previewFlutterUiGuidesCustomTracking": true,
@@ -27,7 +27,8 @@
   "search.exclude": {
     "**/.dart_tool": true,
     "**/build": true,
-    "**/.packages": true
+    "**/.packages": true,
+    "**/.fvm": true
   },
   "files.eol": "\n",
   "files.insertFinalNewline": true,
@@ -35,5 +36,8 @@
   "editor.insertSpaces": true,
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
-  "git.autocrlf": false
+  "git.autocrlf": false,
+  "files.watcherExclude": {
+    "**/.fvm": true
+  }
 }

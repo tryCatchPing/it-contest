@@ -143,7 +143,6 @@ Thumbs.db
 .dartServer
 
 # FVM (Flutter Version Management)
-.fvm/flutter_sdk
 
 # Mason
 .mason/
@@ -151,3 +150,6 @@ Thumbs.db
 # Test coverage
 coverage/
 lcov.info
+
+# FVM Version Cache
+.fvm/
