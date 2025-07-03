@@ -83,3 +83,6 @@ linter:
     no_logic_in_create_state: true
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
+
+formatter:
+  trailing_commas: preserve
