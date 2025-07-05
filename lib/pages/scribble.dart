@@ -19,6 +19,7 @@ import 'package:value_notifier_tools/value_notifier_tools.dart';
 /// 7. 🖼️ PNG 이미지로 내보내기
 /// 8. 📄 JSON 형태로 데이터 내보내기
 /// 9. 🖱️ 포인터 모드 선택 (모든 포인터/펜만)
+/// 10. 🔍 확대/축소 기능 (InteractiveViewer 사용)
 ///
 /// 🔄 네비게이션:
 /// - 홈페이지에서 "Scribble Canvas" 버튼으로 접근
@@ -45,12 +46,27 @@ class _ScribblePageState extends State<ScribblePage> {
   /// - 그리기 모드 (펜/지우개)
   late ScribbleNotifier notifier;
 
+  /// 🔍 TransformationController: 확대/축소 상태를 관리하는 컨트롤러
+  ///
+  /// InteractiveViewer와 함께 사용하여 다음을 관리합니다:
+  /// - 확대/축소 비율
+  /// - 패닝(이동) 상태
+  /// - 변환 매트릭스
+  late TransformationController transformationController;
+
   @override
   void initState() {
-    // 🚀 ScribbleNotifier 초기화
-    // 새로운 빈 캔버스 상태로 시작
+    // 🚀 컨트롤러들 초기화
     notifier = ScribbleNotifier();
+    transformationController = TransformationController();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // 🗑️ 메모리 누수 방지를 위한 컨트롤러 해제
+    transformationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -58,7 +74,7 @@ class _ScribblePageState extends State<ScribblePage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
 
-      // 🔙 상단 앱바 (뒤로가기 + 액션 버튼들)
+      // 🔙 상단 앱바 (뒤로가기 + 액션 버튼들 + 확대/축소 상태)
       appBar: AppBar(
         title: Text(
           widget.title,
@@ -67,31 +83,93 @@ class _ScribblePageState extends State<ScribblePage> {
             color: Colors.white,
           ),
         ),
-        // 🛠️ 상단 툴바: Undo, Redo, Clear, Export 버튼들
-        actions: _buildActions(context),
+        // 🛠️ 상단 툴바: 확대/축소 상태, Undo, Redo, Clear, Export 버튼들
+        actions: [
+          // 🔍 확대/축소 상태 표시
+          ValueListenableBuilder<Matrix4>(
+            valueListenable: transformationController,
+            builder: (context, matrix, child) {
+              final scale = matrix.getMaxScaleOnAxis();
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Center(
+                  child: Text(
+                    '${(scale * 100).toInt()}%',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          // 🔄 확대/축소 리셋 버튼
+          IconButton(
+            icon: const Icon(Icons.zoom_out_map),
+            tooltip: 'Reset Zoom',
+            onPressed: () {
+              transformationController.value = Matrix4.identity();
+            },
+          ),
+          ..._buildActions(context),
+        ],
       ),
 
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 64),
         child: Column(
           children: [
-            // 🎨 메인 그리기 캔버스 영역
+            // 🎨 메인 그리기 캔버스 영역 (확대/축소 기능 포함)
             Expanded(
-              child: Card(
-                clipBehavior: Clip.hardEdge,
-                margin: EdgeInsets.zero,
-                color: Colors.white, // 흰색 캔버스 배경
-                surfaceTintColor: Colors.white,
-                child: Scribble(
-                  // 📡 notifier와 연결하여 상태 동기화
-                  notifier: notifier,
-                  // 🖊️ 펜 도구 활성화 (터치로 그리기 가능)
-                  drawPen: true,
-                ),
+              child: ValueListenableBuilder<Matrix4>(
+                valueListenable: transformationController,
+                builder: (context, matrix, child) {
+                  // 현재 확대/축소 비율 계산
+                  final scale = matrix.getMaxScaleOnAxis();
+
+                  // 배율에 따른 패딩 조정
+                  // 1.0 이하: 큰 패딩 (전체 보기용)
+                  // 1.0 초과: 작은 패딩 (확대 시 최대 활용)
+                  final padding = scale <= 1.0 ? 50.0 : 10.0;
+
+                  return InteractiveViewer(
+                    // 🔍 확대/축소 컨트롤러 연결
+                    transformationController: transformationController,
+                    // 📏 최소/최대 확대 비율 설정
+                    minScale: 0.1, // 10%까지 축소 가능
+                    maxScale: 5.0, // 500%까지 확대 가능
+                    // 🖼️ 캔버스 경계선 여백 (동적 조정)
+                    boundaryMargin: EdgeInsets.all(padding),
+                    // 🚫 크기 제한 해제 (더 큰 캔버스 허용)
+                    constrained: false,
+                    child: Container(
+                      // 📐 넓은 캔버스 영역 (노트북 크기)
+                      width: 3000, // A4 용지 비율보다 더 넓게
+                      height: 4000, // A4 용지 비율보다 더 높게
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Scribble(
+                        // 📡 notifier와 연결하여 상태 동기화
+                        notifier: notifier,
+                        // 🖊️ 펜 도구 활성화 (터치로 그리기 가능)
+                        drawPen: true,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
 
-            // 🛠️ 하단 도구 바 (색상, 굵기, 모드 선택)
+            // 🛠️ 하단 도구 바 (색상, 굵기, 모드 선택, 확대/축소 컨트롤)
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -99,11 +177,12 @@ class _ScribblePageState extends State<ScribblePage> {
                   // 🌈 색상 선택 툴바
                   _buildColorToolbar(context),
                   const VerticalDivider(width: 32), // 구분선
-
                   // 📏 펜 굵기 선택 툴바
                   _buildStrokeToolbar(context),
+                  const VerticalDivider(width: 32), // 구분선
+                  // 🔍 확대/축소 컨트롤 버튼들
+                  _buildZoomControls(context),
                   const Expanded(child: SizedBox()), // 공간 확장
-
                   // 🖱️ 포인터 모드 스위처 (모든 포인터 vs 펜만)
                   _buildPointerModeSwitcher(context),
                 ],
@@ -208,7 +287,7 @@ class _ScribblePageState extends State<ScribblePage> {
     );
   }
 
-  /// �� JSON 데이터 다이얼로그 표시
+  /// 📄 JSON 데이터 다이얼로그 표시
   ///
   /// 현재 스케치의 모든 데이터를 JSON 형태로 직렬화하여 표시합니다.
   /// 이 데이터는 나중에 불러와서 그림을 복원하는 데 사용할 수 있습니다.
@@ -321,7 +400,6 @@ class _ScribblePageState extends State<ScribblePage> {
         _buildColorButton(context, color: Colors.green), // 초록
         _buildColorButton(context, color: Colors.blue), // 파랑
         _buildColorButton(context, color: Colors.yellow), // 노랑
-
         // 🧹 지우개 버튼 (특별한 도구)
         _buildEraserButton(context),
       ],
@@ -403,6 +481,64 @@ class _ScribblePageState extends State<ScribblePage> {
           onPressed: () => notifier.setColor(color), // 클릭 시 색상 변경
         ),
       ),
+    );
+  }
+
+  /// 🔍 확대/축소 컨트롤 버튼들 생성
+  ///
+  /// 📋 버튼 목록:
+  /// 1. 🔍 확대 버튼 (1.2배씩 확대)
+  /// 2. 🔍 축소 버튼 (0.8배씩 축소)
+  /// 3. 🎯 1:1 비율로 리셋
+  /// 4. 📐 화면에 맞춤 (전체 캔버스가 보이도록)
+  Widget _buildZoomControls(BuildContext context) {
+    return Row(
+      children: [
+        // 🔍 확대 버튼
+        IconButton(
+          icon: const Icon(Icons.zoom_in),
+          tooltip: 'Zoom In (120%)',
+          onPressed: () {
+            final Matrix4 matrix = transformationController.value.clone();
+            matrix.scale(1.2); // 20% 확대
+            transformationController.value = matrix;
+          },
+        ),
+        // 🔍 축소 버튼
+        IconButton(
+          icon: const Icon(Icons.zoom_out),
+          tooltip: 'Zoom Out (80%)',
+          onPressed: () {
+            final Matrix4 matrix = transformationController.value.clone();
+            matrix.scale(0.8); // 20% 축소
+            transformationController.value = matrix;
+          },
+        ),
+        // 🎯 1:1 비율로 리셋
+        IconButton(
+          icon: const Icon(Icons.center_focus_strong),
+          tooltip: 'Reset to 100%',
+          onPressed: () {
+            transformationController.value = Matrix4.identity();
+          },
+        ),
+        // 📐 화면에 맞춤
+        IconButton(
+          icon: const Icon(Icons.fit_screen),
+          tooltip: 'Fit to Screen',
+          onPressed: () {
+            // 화면 크기에 맞춰 캔버스 전체가 보이도록 조정
+            final RenderBox renderBox = context.findRenderObject() as RenderBox;
+            final Size screenSize = renderBox.size;
+            final double scaleX = screenSize.width / 3000;
+            final double scaleY = screenSize.height / 4000;
+            final double scale = scaleX < scaleY ? scaleX : scaleY;
+
+            transformationController.value = Matrix4.identity()
+              ..scale(scale * 0.8);
+          },
+        ),
+      ],
     );
   }
 }
