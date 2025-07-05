@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import 'pages/drawing_board.dart';
-import 'pages/flutter_painter_v2_page.dart';
+import 'drawing_tests/drawing_board/drawing_board_test_page.dart';
+import 'drawing_tests/flutter_painter_v2/flutter_painter_v2_test_page.dart';
+// 🎨 드로잉 테스트 페이지들
+import 'drawing_tests/scribble/scribble_test_page.dart';
+// 📱 페이지 임포트
 import 'pages/home_page.dart';
-import 'pages/scribble.dart';
-import 'pages/test.dart';
 
 /// 🚀 Flutter 앱의 시작점
 ///
@@ -89,10 +90,16 @@ class MyApp extends StatelessWidget {
           description: '앱 설정 및 환경설정 (구현 예정)',
         ),
 
-        '/test': (context) => const TestPage(),
+        // 🧪 공통 테스트 페이지 (임시)
+        '/test': (context) => const PlaceholderPage(
+          title: 'Test Page',
+          description: '공통 테스트 기능 페이지 (구현 예정)',
+        ),
 
+        // 📝 Flutter Drawing Board 테스트
         '/flutter_drawing_board': (context) => const FlutterDrawingBoardPage(),
 
+        // 🎨 Flutter Painter v2 테스트
         '/flutter_painter_v2': (context) => const FlutterPainterV2Page(),
       },
     );
