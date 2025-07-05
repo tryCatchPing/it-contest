@@ -58,18 +58,18 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       '손글씨 노트 앱',
-                      style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1C1B1F),
-                              ),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1C1B1F),
+                          ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '4인 팀 프로젝트 - Flutter 데모',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                        color: Colors.grey[600],
+                      ),
                     ),
                   ],
                 ),
@@ -81,9 +81,9 @@ class HomePage extends StatelessWidget {
               Text(
                 '페이지 테스트',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1C1B1F),
-                    ),
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1C1B1F),
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -115,31 +115,43 @@ class HomePage extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // 📂 2. Main Page 버튼
-              //
-              // 💡 동작 설명:
-              // - 사용자가 이 카드를 탭하면 onTap 콜백이 실행됨
-              // - Navigator.pushNamed(context, '/main')가 호출됨
-              // - main.dart의 routes에서 '/main' 경로를 찾음
-              // - MainPage(selectedFolderName: "My Study Notes") 위젯이 생성되어 화면에 표시됨
               _buildNavigationCard(
                 context: context,
-                icon: Icons.folder_open,
-                title: 'Main Page',
-                subtitle: '폴더/노트 관리 화면\n(Figma 와이어프레임 구현)',
+                icon: Icons.brush,
+                title: 'Flutter Drawing Board Test Page',
+                subtitle: 'Flutter 그림판 테스트 페이지',
                 color: const Color(0xFF2196F3),
                 onTap: () {
-                  // 🚀 네비게이션 동작:
-                  // 1. '/main' 라우트로 이동 요청
-                  // 2. main.dart에서 해당 라우트를 찾아 MainPage 생성
-                  // 3. Figma에서 가져온 와이어프레임을 구현한 페이지가 표시됨
-                  // 4. 폴더/노트 관리 UI가 나타남
-                  print('📂 Main 페이지로 이동 중...');
-                  Navigator.pushNamed(context, '/main');
+                  Navigator.pushNamed(context, '/flutter_drawing_board');
                 },
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 16),
+
+              _buildNavigationCard(
+                context: context,
+                icon: Icons.auto_awesome,
+                title: 'Flutter Painter V2 Test Page',
+                subtitle:
+                    '🎨 최신 그리기 기능 테스트\n• 개별 획/객체 삭제 ✓\n• 실시간 도구 변경\n• 직관적인 UI 컨트롤',
+                color: const Color(0xFF673AB7),
+                onTap: () {
+                  Navigator.pushNamed(context, '/flutter_painter_v2');
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              _buildNavigationCard(
+                context: context,
+                icon: Icons.info_outline,
+                title: 'Test Page',
+                subtitle: '테스트 페이지',
+                color: const Color(0xFF2196F3),
+                onTap: () {
+                  Navigator.pushNamed(context, '/test');
+                },
+              ),
 
               // 📊 프로젝트 정보
               Container(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'pages/drawing_board.dart';
+import 'pages/flutter_painter_v2_page.dart';
 import 'pages/home_page.dart';
-import 'pages/main_page.dart';
 import 'pages/scribble.dart';
+import 'pages/test.dart';
 
 /// 🚀 Flutter 앱의 시작점
 ///
@@ -66,36 +68,32 @@ class MyApp extends StatelessWidget {
         // 뒤로가기: HomePage로 돌아감
         '/scribble': (context) => const ScribblePage(title: 'Scribble Canvas'),
 
-        // 📂 Main Page (Figma 와이어프레임 구현)
-        //
-        // 경로: '/main'
-        // 이동 방법: 홈페이지에서 "Main Page" 버튼 클릭
-        // 기능: 폴더/노트 관리 UI (Figma 디자인 기반)
-        // 특징: selectedFolderName 파라미터로 초기 폴더명 설정
-        '/main': (context) => const MainPage(
-              selectedFolderName: 'My Study Notes', // 기본 폴더명
-            ),
-
         // 🚧 추후 구현 예정 페이지들
         // 현재는 PlaceholderPage로 임시 구현
 
         // 🎨 Canvas 편집 페이지 (상세 그리기 모드)
         '/canvas': (context) => const PlaceholderPage(
-              title: 'Canvas Page',
-              description: '손글씨 편집 전용 캔버스 (구현 예정)',
-            ),
+          title: 'Canvas Page',
+          description: '손글씨 편집 전용 캔버스 (구현 예정)',
+        ),
 
         // 📊 그래프/차트 페이지
         '/graph': (context) => const PlaceholderPage(
-              title: 'Graph Page',
-              description: '노트 통계 및 그래프 (구현 예정)',
-            ),
+          title: 'Graph Page',
+          description: '노트 통계 및 그래프 (구현 예정)',
+        ),
 
         // ⚙️ 설정 페이지
         '/settings': (context) => const PlaceholderPage(
-              title: 'Settings Page',
-              description: '앱 설정 및 환경설정 (구현 예정)',
-            ),
+          title: 'Settings Page',
+          description: '앱 설정 및 환경설정 (구현 예정)',
+        ),
+
+        '/test': (context) => const TestPage(),
+
+        '/flutter_drawing_board': (context) => const FlutterDrawingBoardPage(),
+
+        '/flutter_painter_v2': (context) => const FlutterPainterV2Page(),
       },
     );
   }
@@ -151,8 +149,8 @@ class PlaceholderPage extends StatelessWidget {
               Text(
                 title,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
 
@@ -162,8 +160,8 @@ class PlaceholderPage extends StatelessWidget {
               Text(
                 description,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                  color: Colors.grey[600],
+                ),
                 textAlign: TextAlign.center,
               ),
 
