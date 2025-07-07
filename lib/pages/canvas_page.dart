@@ -6,10 +6,10 @@ import 'package:value_notifier_tools/value_notifier_tools.dart';
 
 /// 캔버스에서 사용할 기본 색상들
 enum CanvasColor {
-  charcoal('숯검정', Color(0xFF1A1A1A)),
-  sapphire('사파이어', Color(0xFF1A5DBA)),
-  forest('숲녹색', Color(0xFF277A3E)),
-  crimson('진홍색', Color(0xFFC72C2C));
+  charcoal('검정', Color(0xFF1A1A1A)),
+  sapphire('파랑', Color(0xFF1A5DBA)),
+  forest('녹색', Color(0xFF277A3E)),
+  crimson('빨강', Color(0xFFC72C2C));
 
   const CanvasColor(this.displayName, this.color);
 
@@ -253,7 +253,7 @@ class _CanvasPageState extends State<CanvasPage> {
     );
   }
 
-  List<Widget> _buildActions(context) {
+  List<Widget> _buildActions(BuildContext context) {
     return [
       ValueListenableBuilder(
         valueListenable: notifier,

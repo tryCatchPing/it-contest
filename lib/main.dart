@@ -17,6 +17,7 @@ final _router = GoRouter(
       builder: (context, state) => const CanvasPage(),
     ),
   ],
+  debugLogDiagnostics: true,
 );
 
 class MyApp extends StatelessWidget {
