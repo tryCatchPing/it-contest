@@ -254,9 +254,9 @@ cd ios && pod install && cd ..
 ### Git 브랜치 전략 (Modified Feature Branch)
 
 ```
-main (프로덕션 배포)
+main (프로덕션 배포) ← 최종 안정 버전
  ↑
-dev (개발 통합 - 매주 금요일 통합)
+dev (개발 통합) ← 매주 금요일 통합, 모든 PR의 타겟
  ↑
 ├── feature/canvas-dev-a        # 개발자 A: Canvas 관련
 ├── feature/database-dev-b      # 개발자 B: DB/Storage 관련
@@ -274,12 +274,217 @@ feature/database-dev-b        # Database 기능 - 개발자 B
 feature/lasso-ui-design-a     # Lasso UI - 디자이너 A
 ```
 
-#### **작업 플로우**
+### 🔄 상세 작업 플로우 (충돌 최소화)
 
-1. **매주 시작**: `dev`에서 개인 브랜치 생성 또는 업데이트
-2. **일일 작업**: 개인 브랜치에서 개발 진행
-3. **주 2-3회**: `dev`로 Pull Request (작은 단위)
-4. **매주 금요일**: 통합 테스트 후 `main` 머지
+#### **1️⃣ 새로운 기능 브랜치 시작**
+
+```bash
+# 항상 최신 dev에서 시작
+git checkout dev
+git pull origin dev
+
+# 새 브랜치 생성
+git checkout -b feature/canvas-dev-a
+
+# 첫 푸시 (upstream 설정)
+git push -u origin feature/canvas-dev-a
+```
+
+#### **2️⃣ 일일 작업 사이클**
+
+```bash
+# 🌅 작업 시작 전 (매일 아침 권장)
+git checkout dev
+git pull origin dev
+git checkout feature/canvas-dev-a
+git rebase dev  # 또는 git merge dev (팀 정책에 따라)
+
+# 충돌 발생 시
+git status  # 충돌 파일 확인
+# 충돌 해결 후
+git add .
+git rebase --continue
+
+# 🌆 작업 완료 후 (매일 저녁)
+git add .
+git commit -m "[TASK-2] feat(canvas): implement basic drawing"
+git push origin feature/canvas-dev-a
+```
+
+#### **3️⃣ Pull Request 전 준비 (중요! 충돌 방지)**
+
+```bash
+# PR 올리기 직전에 반드시 수행
+git checkout dev
+git pull origin dev
+git checkout feature/canvas-dev-a
+
+# 최신 dev와 동기화 (rebase 권장)
+git rebase dev
+
+# 충돌 발생 시 해결
+# ... 충돌 해결 ...
+git add .
+git rebase --continue
+
+# 강제 푸시 (rebase 후 필요)
+git push --force-with-lease origin feature/canvas-dev-a
+
+# 이제 GitHub에서 PR 생성
+```
+
+#### **4️⃣ 코드 리뷰 수정사항 반영**
+
+```bash
+# 리뷰 피드백 반영
+git add .
+git commit -m "[TASK-2] fix(canvas): address code review feedback"
+
+# 다시 dev와 동기화 (다른 팀원 작업이 머지되었을 수 있음)
+git checkout dev
+git pull origin dev
+git checkout feature/canvas-dev-a
+git rebase dev
+
+# 푸시
+git push --force-with-lease origin feature/canvas-dev-a
+```
+
+#### **5️⃣ PR 머지 후 정리**
+
+```bash
+# PR이 머지된 후
+git checkout dev
+git pull origin dev
+
+# 로컬 브랜치 삭제
+git branch -d feature/canvas-dev-a
+
+# 원격 브랜치 삭제 (GitHub에서 자동 삭제 설정 권장)
+git push origin --delete feature/canvas-dev-a
+```
+
+### ⚡ 충돌 최소화 전략
+
+#### **📅 작업 스케줄링**
+
+1. **소규모 PR**: 하나의 기능당 최대 500줄 이하
+2. **빠른 머지**: PR 생성 후 24시간 내 리뷰 완료 목표
+3. **파일 분할**: 같은 파일을 여러 명이 수정하지 않도록 사전 조율
+
+#### **🗂️ 파일별 담당자 분리**
+
+```
+lib/
+├── canvas/          # 개발자 A 전담
+├── database/        # 개발자 B 전담
+├── pdf/            # 개발자 B 전담
+├── ui/
+│   ├── components/  # 디자이너 A 전담
+│   └── theme/       # 디자이너 B 전담
+└── shared/         # 공통 - 사전 협의 필요
+```
+
+#### **📱 동시 작업 시 충돌 방지 규칙**
+
+1. **pubspec.yaml 수정**: 슬랙에서 미리 공지 후 작업
+2. **shared 폴더**: PR 전에 팀원들과 사전 논의
+3. **main.dart, app.dart**: 최소한의 수정, 사전 협의 필수
+
+#### **🔧 Rebase vs Merge 정책**
+
+**팀 정책: Rebase 우선 (Clean History)**
+
+```bash
+# ✅ 권장: Rebase (깔끔한 히스토리)
+git rebase dev
+
+# ⚠️ 주의: Merge (히스토리 복잡해짐, 필요시에만)
+git merge dev
+```
+
+**Rebase 실패 시 Merge 사용:**
+
+```bash
+# rebase가 너무 복잡한 충돌을 만들 때
+git rebase --abort
+git merge dev
+```
+
+#### **🚨 긴급 상황 대응**
+
+**충돌이 복잡할 때:**
+
+```bash
+# 1. 백업 브랜치 생성
+git checkout -b feature/canvas-dev-a-backup
+
+# 2. 원본 브랜치에서 fresh start
+git checkout feature/canvas-dev-a
+git reset --hard origin/dev
+git cherry-pick [필요한-커밋들]
+
+# 3. 단계별로 충돌 해결
+```
+
+**실수로 잘못 머지했을 때:**
+
+```bash
+# dev 브랜치에서 되돌리기 (머지 직후에만)
+git checkout dev
+git reset --hard HEAD~1
+git push --force-with-lease origin dev
+```
+
+### 📊 주간 통합 프로세스
+
+#### **🗓️ 매주 금요일 통합 일정**
+
+1. **오후 5시**: 모든 PR 리뷰 완료
+2. **오후 6시**: dev → main 머지 준비
+3. **오후 7시**: 통합 테스트 및 main 머지
+4. **오후 8시**: 다음 주 스프린트 계획
+
+#### **📋 통합 체크리스트**
+
+```bash
+# dev 브랜치 최종 검증
+git checkout dev
+git pull origin dev
+fvm flutter test        # 모든 테스트 통과
+fvm flutter analyze     # 정적 분석 통과
+fvm flutter run         # 앱 정상 실행
+
+# main으로 머지
+git checkout main
+git pull origin main
+git merge dev           # Fast-forward 머지 권장
+git push origin main
+
+# 태그 생성 (선택)
+git tag -a week-2 -m "Week 2 sprint completion"
+git push origin week-2
+```
+
+### 🎯 팀 협업 모범 사례
+
+#### **💬 커뮤니케이션**
+
+- **슬랙 알림**: 큰 변경사항 PR 전에 미리 공지
+- **코드 리뷰**: 비판이 아닌 학습과 개선의 기회
+- **Daily Standup**: 어제 한 일, 오늘 할 일, 블로커 공유
+
+#### **🔍 코드 리뷰 가이드라인**
+
+- **24시간 규칙**: PR 생성 후 24시간 내 1차 리뷰
+- **Approve 조건**: 최소 1명 승인 + 충돌 해결 완료
+- **리뷰 우선순위**: 작은 PR > 큰 PR, 긴급도 순
+
+#### **📈 성과 지표**
+
+- **머지 성공률**: 95% 이상 (충돌 없는 머지)
+- **리뷰 시간**: 평균 4시간 이내
+- **PR 크기**: 평균 200줄 이하
 
 ### Task 기반 개발 순서 (의존성 고려)
 
