@@ -4,6 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 import 'package:value_notifier_tools/value_notifier_tools.dart';
 
+/// 캔버스에서 사용할 기본 색상들
+enum CanvasColor {
+  charcoal('숯검정', Color(0xFF1A1A1A)),
+  sapphire('사파이어', Color(0xFF1A5DBA)),
+  forest('숲녹색', Color(0xFF277A3E)),
+  crimson('진홍색', Color(0xFFC72C2C));
+
+  const CanvasColor(this.displayName, this.color);
+
+  /// 사용자에게 표시할 한글 이름
+  final String displayName;
+
+  /// 실제 Color 값
+  final Color color;
+
+  /// 모든 색상 리스트 (UI 구성용)
+  static List<CanvasColor> get all => CanvasColor.values;
+
+  /// 기본 색상 (첫 번째 색상)
+  static CanvasColor get defaultColor => CanvasColor.charcoal;
+}
+
 class CanvasPage extends StatefulWidget {
   const CanvasPage({super.key, this.noteTitle = 'temp_note'});
 
@@ -45,6 +67,12 @@ class _CanvasPageState extends State<CanvasPage> {
       widths: const [1, 3, 5, 7],
       // pressureCurve: Curves.easeInOut,
     );
+
+    // 기본 색상 설정
+    notifier.setColor(CanvasColor.defaultColor.color);
+    // 기본 굵기 설정
+    notifier.setStrokeWidth(3);
+
     transformationController = TransformationController();
 
     super.initState();
@@ -55,6 +83,58 @@ class _CanvasPageState extends State<CanvasPage> {
     // notifier.dispose();
     transformationController.dispose();
     super.dispose();
+  }
+
+  /// 배경 이미지 위젯을 빌드합니다
+  ///
+  /// Placeholder는 실제 이미지가 로드될 때까지의 임시 표시입니다.
+  Widget _buildBackgroundLayer() {
+    // 내부 로직 구성 필요 - 그냥 PDF-to-Image 사용할까
+    return _buildPlaceholder();
+  }
+
+  /// 플레이스홀더 위젯 (배경 이미지가 없을 때 표시)
+  Widget _buildPlaceholder() {
+    return Container(
+      width: 1000,
+      height: 1000,
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 2,
+          style: BorderStyle.solid,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.picture_as_pdf,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'PDF 이미지가 로드될 예정입니다',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '크기: 1000x1000px',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -75,10 +155,28 @@ class _CanvasPageState extends State<CanvasPage> {
                 margin: EdgeInsets.zero,
                 color: Colors.white,
                 surfaceTintColor: Colors.white,
-                child: Scribble(
-                  notifier: notifier,
-                  drawPen: true,
-                  simulatePressure: _simulatePressure,
+                child: InteractiveViewer(
+                  transformationController: transformationController,
+                  minScale: 0.1,
+                  maxScale: 3,
+                  child: SizedBox(
+                    // 사이즈는 import 된 이미지 기준으로 설정 필요
+                    width: 1000,
+                    height: 1000,
+                    child: Stack(
+                      children: [
+                        // 배경 레이어 (PDF 이미지)
+                        _buildBackgroundLayer(),
+
+                        // 그리기 레이어 (투명한 캔버스)
+                        Scribble(
+                          notifier: notifier,
+                          drawPen: true,
+                          simulatePressure: _simulatePressure,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -110,7 +208,7 @@ class _CanvasPageState extends State<CanvasPage> {
                   const Divider(
                     height: 32,
                   ),
-                  // 🎯 필압 토글 컨트롤
+                  // 필압 토글 컨트롤
                   _buildPressureToggle(context),
                   const SizedBox.shrink(),
                 ],
@@ -263,11 +361,15 @@ class _CanvasPageState extends State<CanvasPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        _buildColorButton(context, color: Colors.black),
-        _buildColorButton(context, color: Colors.red),
-        _buildColorButton(context, color: Colors.green),
-        _buildColorButton(context, color: Colors.blue),
-        _buildColorButton(context, color: Colors.yellow),
+        // 🎨 모든 캔버스 색상을 동적으로 생성
+        ...CanvasColor.all.map(
+          (canvasColor) => _buildColorButton(
+            context,
+            color: canvasColor.color,
+            tooltip: canvasColor.displayName,
+          ),
+        ),
+        // 지우개 버튼
         _buildEraserButton(context),
       ],
     );
@@ -317,6 +419,7 @@ class _CanvasPageState extends State<CanvasPage> {
   Widget _buildColorButton(
     BuildContext context, {
     required Color color,
+    required String tooltip,
   }) {
     return ValueListenableBuilder(
       valueListenable: notifier.select(
@@ -328,6 +431,7 @@ class _CanvasPageState extends State<CanvasPage> {
           color: color,
           isActive: value,
           onPressed: () => notifier.setColor(color),
+          tooltip: tooltip,
         ),
       ),
     );
@@ -401,6 +505,7 @@ class ColorButton extends StatelessWidget {
     required this.onPressed,
     this.outlineColor,
     this.child,
+    this.tooltip,
     super.key,
   });
 
@@ -413,6 +518,8 @@ class ColorButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   final Icon? child;
+
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -439,6 +546,7 @@ class ColorButton extends StatelessWidget {
         ),
         onPressed: onPressed,
         icon: child ?? const SizedBox(),
+        tooltip: tooltip,
       ),
     );
   }
