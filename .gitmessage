@@ -1,0 +1,49 @@
+# [TASK-번호] type(scope): 간단한 설명 (50자 이내)
+#
+# 상세 설명 (선택사항, 72자로 줄바꿈)
+# - 무엇을 변경했는지
+# - 왜 변경했는지
+# - 어떤 이슈를 해결했는지
+#
+# ============== 커밋 메시지 가이드 ==============
+#
+# 📋 형식: [TASK-번호] type(scope): subject
+#
+# 🏷️ Type 분류:
+# - feat     : 새 기능 구현
+# - fix      : 버그 수정
+# - ui       : UI/UX 개선
+# - db       : 데이터베이스 관련
+# - perf     : 성능 개선
+# - test     : 테스트 코드
+# - docs     : 문서 업데이트
+# - refactor : 코드 리팩토링
+# - style    : 코드 스타일 (포맷팅, 세미콜론 등)
+# - chore    : 빌드, 설정 파일 수정
+#
+# 📝 Scope 예시:
+# - canvas   : Canvas 기능
+# - database : 데이터베이스
+# - pdf      : PDF 관련
+# - ui       : UI 컴포넌트
+# - auth     : 인증
+# - export   : 내보내기
+#
+# ✅ 좋은 예시:
+# [TASK-2] feat(canvas): add basic drawing functionality
+# [TASK-4] fix(database): resolve note saving issue
+# [TASK-9] ui(lasso): implement selection feedback animation
+# [TASK-7] perf(pdf): optimize rendering performance
+#
+# ❌ 나쁜 예시:
+# update code
+# fix bug
+# 작업 완료
+#
+# 💡 팁:
+# - 첫 번째 줄은 50자 이내로 작성
+# - 명령형 현재시제 사용 ("Add" not "Added")
+# - 본문은 72자에서 줄바꿈
+# - 이슈 번호가 있으면 마지막에 추가 (Closes #123)
+#
+# ===============================================
