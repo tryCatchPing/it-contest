@@ -34,6 +34,12 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  # GitHub 최신 버전으로 업데이트 (압력 설정 지원)
+  scribble:
+    git:
+      url: https://github.com/timcreatedit/scribble.git
+      ref: main
+  go_router: ^16.0.0
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +92,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-
-formatter:
-  trailing_commas: preserve
