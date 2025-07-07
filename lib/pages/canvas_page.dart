@@ -59,6 +59,9 @@ class _CanvasPageState extends State<CanvasPage> {
   /// false: 일정한 굵기로 그리기
   bool _simulatePressure = false;
 
+  final double canvasWidth = 2000.0;
+  final double canvasHeight = 2000.0;
+
   @override
   void initState() {
     // 컨트롤러 초기화
@@ -88,16 +91,22 @@ class _CanvasPageState extends State<CanvasPage> {
   /// 배경 이미지 위젯을 빌드합니다
   ///
   /// Placeholder는 실제 이미지가 로드될 때까지의 임시 표시입니다.
-  Widget _buildBackgroundLayer() {
+  Widget _buildBackgroundLayer(double width, double height) {
     // 내부 로직 구성 필요 - 그냥 PDF-to-Image 사용할까
-    return _buildPlaceholder();
+    return _buildPlaceholder(
+      width: width,
+      height: height,
+    );
   }
 
   /// 플레이스홀더 위젯 (배경 이미지가 없을 때 표시)
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder({
+    required double width,
+    required double height,
+  }) {
     return Container(
-      width: 1000,
-      height: 1000,
+      width: width,
+      height: height,
       decoration: BoxDecoration(
         color: Colors.grey[50],
         border: Border.all(
@@ -125,7 +134,7 @@ class _CanvasPageState extends State<CanvasPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '크기: 1000x1000px',
+              '크기: $width x $height px',
               style: TextStyle(
                 color: Colors.grey[500],
                 fontSize: 12,
@@ -149,32 +158,51 @@ class _CanvasPageState extends State<CanvasPage> {
         padding: const EdgeInsets.symmetric(horizontal: 64),
         child: Column(
           children: [
+            // 캔버스 영역 - 남은 공간을 자동으로 모두 채움
             Expanded(
-              child: Card(
-                clipBehavior: Clip.hardEdge,
-                margin: EdgeInsets.zero,
-                color: Colors.white,
-                surfaceTintColor: Colors.white,
-                child: InteractiveViewer(
-                  transformationController: transformationController,
-                  minScale: 0.1,
-                  maxScale: 3,
-                  child: SizedBox(
-                    // 사이즈는 import 된 이미지 기준으로 설정 필요
-                    width: 1000,
-                    height: 1000,
-                    child: Stack(
-                      children: [
-                        // 배경 레이어 (PDF 이미지)
-                        _buildBackgroundLayer(),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Card(
+                  elevation: 8,
+                  shadowColor: Colors.black26,
+                  surfaceTintColor: Colors.white,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: InteractiveViewer(
+                      transformationController: transformationController,
+                      minScale: 0.3,
+                      maxScale: 3.0,
+                      constrained: false,
+                      panEnabled: true, // 패닝 활성화
+                      scaleEnabled: true, // 스케일 활성화
+                      child: SizedBox(
+                        // 캔버스 주변에 여백 공간 제공 (축소 시 필요)
+                        width: canvasWidth * 1.5,
+                        height: canvasHeight * 1.5,
+                        child: Center(
+                          child: SizedBox(
+                            // 실제 캔버스: PDF/그리기 영역
+                            width: canvasWidth,
+                            height: canvasHeight,
+                            child: Stack(
+                              children: [
+                                // 배경 레이어 (PDF 이미지)
+                                _buildBackgroundLayer(
+                                  canvasWidth,
+                                  canvasHeight,
+                                ),
 
-                        // 그리기 레이어 (투명한 캔버스)
-                        Scribble(
-                          notifier: notifier,
-                          drawPen: true,
-                          simulatePressure: _simulatePressure,
+                                // 그리기 레이어 (투명한 캔버스)
+                                Scribble(
+                                  notifier: notifier,
+                                  drawPen: true,
+                                  simulatePressure: _simulatePressure,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -200,6 +228,8 @@ class _CanvasPageState extends State<CanvasPage> {
                             _buildStrokeToolbar(context),
                           ],
                         ),
+                        // 필압 토글 컨트롤
+                        _buildPressureToggle(context),
                         const SizedBox.shrink(),
                         _buildPointerModeSwitcher(context),
                       ],
@@ -208,8 +238,11 @@ class _CanvasPageState extends State<CanvasPage> {
                   const Divider(
                     height: 32,
                   ),
-                  // 필압 토글 컨트롤
-                  _buildPressureToggle(context),
+                  const SizedBox(height: 16),
+
+                  // 📊 캔버스와 뷰포트 정보를 표시하는 위젯
+                  _buildCanvasInfo(context),
+
                   const SizedBox.shrink(),
                 ],
               ),
@@ -456,32 +489,7 @@ class _CanvasPageState extends State<CanvasPage> {
             size: 20,
           ),
           const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '필압 시뮬레이션',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: _simulatePressure
-                        ? Colors.orange[700]
-                        : Colors.green[700],
-                  ),
-                ),
-                Text(
-                  _simulatePressure ? '속도에 따른 가변 굵기' : '일정한 굵기로 그리기',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _simulatePressure
-                        ? Colors.orange[600]
-                        : Colors.green[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
+
           Switch.adaptive(
             value: _simulatePressure,
             onChanged: (value) {
@@ -491,6 +499,123 @@ class _CanvasPageState extends State<CanvasPage> {
             },
             activeColor: Colors.orange[600],
             inactiveTrackColor: Colors.green[200],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 📊 캔버스와 뷰포트 정보를 표시하는 위젯
+  Widget _buildCanvasInfo(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          // 🖼️ 뷰포트 정보
+          Column(
+            children: [
+              Icon(
+                Icons.crop_free,
+                size: 20,
+                color: Colors.blue[600],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '뷰포트',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.blue[700],
+                ),
+              ),
+              Text(
+                '자동 크기',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.blue[600],
+                ),
+              ),
+            ],
+          ),
+
+          // 📐 구분선
+          Container(
+            width: 1,
+            height: 40,
+            color: Colors.grey[300],
+          ),
+
+          // 🎨 캔버스 정보
+          Column(
+            children: [
+              Icon(
+                Icons.photo_size_select_large,
+                size: 20,
+                color: Colors.green[600],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '캔버스',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green[700],
+                ),
+              ),
+              Text(
+                '${canvasWidth.toInt()}×${canvasHeight.toInt()}',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.green[600],
+                ),
+              ),
+            ],
+          ),
+
+          // 📐 구분선
+          Container(
+            width: 1,
+            height: 40,
+            color: Colors.grey[300],
+          ),
+
+          // 🔍 확대 정보 (ValueListenableBuilder로 실시간 업데이트)
+          ValueListenableBuilder<Matrix4>(
+            valueListenable: transformationController,
+            builder: (context, matrix, child) {
+              final scale = matrix.getMaxScaleOnAxis();
+              return Column(
+                children: [
+                  Icon(
+                    Icons.zoom_in,
+                    size: 20,
+                    color: Colors.orange[600],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '확대율',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange[700],
+                    ),
+                  ),
+                  Text(
+                    '${(scale * 100).toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.orange[600],
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
