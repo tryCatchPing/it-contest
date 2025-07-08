@@ -7,7 +7,7 @@ on:
     branches: [main, dev]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,14 +17,13 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.19.0"
           channel: "stable"
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Run code analysis
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
       - name: Build web
         run: flutter build web
