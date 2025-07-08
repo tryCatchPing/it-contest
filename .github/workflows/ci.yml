@@ -22,16 +22,6 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Cache pub dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{ env.PUB_CACHE }}
-            ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -58,16 +48,6 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Cache pub dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{ env.PUB_CACHE }}
-            ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
       - name: Cache Gradle (Android)
         if: matrix.build-target == 'android'
         uses: actions/cache@v3
@@ -89,23 +69,7 @@ jobs:
 
       - name: Build Android APK
         if: matrix.build-target == 'android'
-        run: flutter build apk --release
-
-      - name: Upload Web Build
-        if: matrix.build-target == 'web'
-        uses: actions/upload-artifact@v3
-        with:
-          name: web-build
-          path: build/web/
-          retention-days: 7
-
-      - name: Upload Android APK
-        if: matrix.build-target == 'android'
-        uses: actions/upload-artifact@v3
-        with:
-          name: android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 7
+        run: flutter build apk --debug
 
   # 테스트 job은 주석 처리 (테스트 파일 준비되면 활성화)
   # test:
