@@ -98,11 +98,11 @@ class HomePage extends StatelessWidget {
                 // - main.dart의 routes에서 '/canvas' 경로를 찾음
                 // - CanvasPage() 위젯이 생성되어 화면에 표시됨
                 // - 새 페이지가 현재 페이지(HomePage) 위에 스택처럼 쌓임
-                _buildNavigationCard(
+                HomePage.buildNavigationCard(
                   context: context,
-                  icon: Icons.brush,
-                  title: 'Canvas',
-                  subtitle: '캔버스 기본 페이지',
+                  icon: Icons.note_alt,
+                  title: '노트 목록',
+                  subtitle: '저장된 스케치 파일들을 확인하고 편집하세요',
                   color: const Color(0xFF4CAF50),
                   onTap: () {
                     // 🚀 go_router 네비게이션 동작:
@@ -170,7 +170,7 @@ class HomePage extends StatelessWidget {
   /// 2. GestureDetector가 터치 이벤트 감지
   /// 3. onTap 콜백 함수 실행
   /// 4. context.push()를 통해 새 페이지로 이동 (go_router)
-  Widget _buildNavigationCard({
+  static Widget buildNavigationCard({
     required BuildContext context,
     required IconData icon,
     required String title,

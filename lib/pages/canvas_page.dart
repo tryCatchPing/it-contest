@@ -4,6 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 import 'package:value_notifier_tools/value_notifier_tools.dart';
 
+import '../data/sketches.dart';
+
+class CustomScribbleNotifier extends ScribbleNotifier {
+  CustomScribbleNotifier({
+    super.sketch,
+    super.allowedPointersMode,
+    super.maxHistoryLength,
+    super.widths,
+    super.pressureCurve,
+    super.simplifier,
+    super.simplificationTolerance,
+    required this.canvasIndex,
+  });
+
+  final int canvasIndex;
+
+  @override
+  void onPointerUp(PointerUpEvent event) {
+    super.onPointerUp(event);
+    _saveSketch();
+  }
+
+  void _saveSketch() {
+    final json = currentSketch.toJson();
+    sketches[canvasIndex].jsonData = jsonEncode(json);
+  }
+}
+
 /// 캔버스에서 사용할 기본 색상들
 enum CanvasColor {
   charcoal('검정', Color(0xFF1A1A1A)),
@@ -27,9 +55,15 @@ enum CanvasColor {
 }
 
 class CanvasPage extends StatefulWidget {
-  const CanvasPage({super.key, this.noteTitle = 'temp_note'});
+  const CanvasPage({
+    super.key,
+    this.noteTitle = 'temp_note',
+    required this.canvasIndex,
+  });
 
   final String? noteTitle;
+
+  final int canvasIndex;
 
   @override
   State<CanvasPage> createState() => _CanvasPageState();
@@ -65,10 +99,17 @@ class _CanvasPageState extends State<CanvasPage> {
   @override
   void initState() {
     // 컨트롤러 초기화
-    notifier = ScribbleNotifier(
+    notifier = CustomScribbleNotifier(
       maxHistoryLength: 100,
       widths: const [1, 3, 5, 7],
       // pressureCurve: Curves.easeInOut,
+      canvasIndex: widget.canvasIndex,
+    );
+
+    // 초기 스케치 설정
+    notifier.setSketch(
+      sketch: sketches[widget.canvasIndex].toSketch(),
+      addToUndoHistory: false, // 초기 설정이므로 undo 히스토리에 추가하지 않음
     );
 
     // 기본 색상 설정
@@ -288,7 +329,22 @@ class _CanvasPageState extends State<CanvasPage> {
         tooltip: 'Show JSON',
         onPressed: () => _showJson(context),
       ),
+      IconButton(
+        icon: const Icon(Icons.save),
+        tooltip: 'Save',
+        onPressed: () => _saveSketch(context),
+      ),
     ];
+  }
+
+  void _saveSketch(BuildContext context) {
+    final json = notifier.currentSketch.toJson();
+    final data = SketchData(
+      name: 'temp',
+      description: 'temp',
+      jsonData: jsonEncode(json),
+    );
+    sketches.add(data);
   }
 
   void _showImage(BuildContext context) async {
