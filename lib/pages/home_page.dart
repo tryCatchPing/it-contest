@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 
 /// 🏠 테스트용 홈페이지
 ///
@@ -112,6 +113,32 @@ class HomePage extends StatelessWidget {
                     // 4. 사용자에게는 새 화면이 나타나는 것처럼 보임
                     print('🎨 Canvas Page로 이동 중...');
                     context.push('/canvas');
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                // 📄 2. PDF 불러오기 버튼
+                HomePage.buildNavigationCard(
+                  context: context,
+                  icon: Icons.picture_as_pdf,
+                  title: 'PDF 파일 열기',
+                  subtitle: 'PDF 문서를 불러와 그 위에 필기하세요',
+                  color: const Color(0xFFF44336),
+                  onTap: () async {
+                    print('PDF 파일 열기 버튼 탭됨.');
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf'],
+                    );
+                    if (result != null && result.files.single.path != null) {
+                      final filePath = result.files.single.path!;
+                      print('PDF 파일 선택됨: $filePath');
+                      // ignore: use_build_context_synchronously
+                      context.push('/pdf_canvas', extra: filePath);
+                    } else {
+                      print('PDF 파일 선택 취소 또는 실패.');
+                    }
                   },
                 ),
 
