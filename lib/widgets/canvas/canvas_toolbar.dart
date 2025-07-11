@@ -4,6 +4,15 @@ import 'package:scribble/scribble.dart';
 import '../../models/canvas_color.dart';
 import 'color_button.dart';
 
+/* TODO
+ * 펜 선택
+ * 펜 색상
+ * 지우개 선택
+ * 하이라이터 선택
+ * 하이라이터 색상
+ * 펜 / 하이라이터 굵기 (펜 별 굵기 옵션 달라짐)
+ */
+
 class CanvasToolbar extends StatelessWidget {
   const CanvasToolbar({
     required this.notifier,
