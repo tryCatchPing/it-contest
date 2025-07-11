@@ -19,7 +19,7 @@ enum CanvasColor {
   Color get highlighterColor => color.withAlpha(50);
 
   /// 지정된 투명도로 색상 생성
-  Color withOpacity(double opacity) => color.withOpacity(opacity);
+  Color withOpacity(double opacity) => color.withValues(alpha: opacity);
 
   /// 모든 색상 리스트 (UI 구성용)
   static List<CanvasColor> get all => CanvasColor.values;
