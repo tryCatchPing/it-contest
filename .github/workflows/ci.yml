@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: [main, dev]
 
+env:
+  FLUTTER_VERSION: "3.32.5"
+  JAVA_VERSION: "11"
+
 jobs:
   analyze:
     name: Code Analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -18,12 +23,15 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.32.5" # FVM 버전과 일치
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: "stable"
-          cache: true
+          cache: true # ← Flutter SDK 재사용으로 ~2분 절약
 
-      - name: Install dependencies
+      - name: Get dependencies
         run: flutter pub get
+
+      - name: Verify pub get
+        run: flutter pub deps
 
       - name: Run code analysis
         run: flutter analyze --no-fatal-infos
@@ -31,9 +39,11 @@ jobs:
   build:
     name: Build Applications
     runs-on: ubuntu-latest
-    needs: analyze # 분석 통과 후 빌드
+    needs: analyze
+    timeout-minutes: 45
 
     strategy:
+      fail-fast: false
       matrix:
         build-target: [web, android]
 
@@ -41,16 +51,65 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Android 빌드에만 필요한 설정들 (매번 새로운 VM이므로 필수)
+      - name: Setup Java (Android only)
+        if: matrix.build-target == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK (Android only)
+        if: matrix.build-target == 'android'
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
+
+      # 라이센스는 매번 승인해야 함 (새로운 VM이므로)
+      - name: Accept Android SDK licenses (Android only)
+        if: matrix.build-target == 'android'
+        run: |
+          set -e
+          echo "Accepting Android SDK licenses..."
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          echo "Android SDK licenses accepted"
+
+      # PDF 패키지들이 요구하는 NDK 버전들 설치
+      - name: Install required Android components (Android only)
+        if: matrix.build-target == 'android'
+        run: |
+          set -e
+          echo "Installing Android SDK components..."
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "ndk;27.0.12077973" \
+            "ndk;29.0.13599879" || true
+          echo "Android SDK components installed"
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.32.5" # FVM 버전과 일치
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: "stable"
-          cache: true
+          cache: true # ← Flutter SDK 캐싱으로 설치 시간 단축
 
-      - name: Cache Gradle (Android)
+      # 의존성 캐싱으로 pub get 시간 대폭 단축
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.tool_cache }}/flutter
+            ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_VERSION }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-${{ env.FLUTTER_VERSION }}-
+            ${{ runner.os }}-flutter-
+
+      # Gradle 캐싱으로 Android 빌드 시간 단축
+      - name: Cache Gradle (Android only)
         if: matrix.build-target == 'android'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -60,21 +119,87 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Get dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      # PDF.js 설정 최적화: 이미 설정되어 있으면 스킵
+      - name: Setup PDF.js for web (Web only)
+        if: matrix.build-target == 'web'
+        run: |
+          echo "Checking PDF.js configuration..."
+          if grep -q "pdfjs-dist" web/index.html; then
+            echo "✅ PDF.js already configured, skipping installation"
+          else
+            echo "📦 Installing PDF.js for web..."
+            flutter pub run pdfx:install_web
+            echo "✅ PDF.js setup completed"
+          fi
+
+      - name: Verify web/index.html (Web only)
+        if: matrix.build-target == 'web'
+        run: |
+          if [ -f "web/index.html" ]; then
+            echo "✅ web/index.html exists"
+            if grep -q "pdfjs-dist" web/index.html; then
+              echo "✅ PDF.js scripts found in web/index.html"
+            else
+              echo "❌ PDF.js scripts not found in web/index.html"
+              exit 1
+            fi
+          else
+            echo "❌ web/index.html not found"
+            exit 1
+          fi
+
+      # Android는 이전 빌드 캐시 때문에 문제가 생길 수 있어서 clean
+      - name: Clean Flutter (Android only)
+        if: matrix.build-target == 'android'
+        run: flutter clean
 
       - name: Build Web
         if: matrix.build-target == 'web'
-        run: flutter build web --release
+        run: |
+          echo "Building web application..."
+          flutter build web --release --web-renderer html
+          echo "Web build completed"
+
+      - name: Verify web build output (Web only)
+        if: matrix.build-target == 'web'
+        run: |
+          if [ -d "build/web" ]; then
+            echo "✅ Web build output exists"
+            ls -la build/web/
+          else
+            echo "❌ Web build output not found"
+            exit 1
+          fi
 
       - name: Build Android APK
         if: matrix.build-target == 'android'
-        run: flutter build apk --debug
+        run: |
+          echo "Building Android APK..."
+          flutter build apk --debug --verbose
+          echo "Android APK build completed"
 
-  # 테스트 job은 주석 처리 (테스트 파일 준비되면 활성화)
+      - name: Verify Android build output (Android only)
+        if: matrix.build-target == 'android'
+        run: |
+          if [ -f "build/app/outputs/flutter-apk/app-debug.apk" ]; then
+            echo "✅ Android APK exists"
+            ls -la build/app/outputs/flutter-apk/
+          else
+            echo "❌ Android APK not found"
+            exit 1
+          fi
+
+  # 테스트 job (미래 사용을 위해 준비)
   # test:
   #   name: Run Tests
   #   runs-on: ubuntu-latest
+  #   timeout-minutes: 15
+  #   needs: analyze
   #
   #   steps:
   #     - name: Checkout code
@@ -83,12 +208,17 @@ jobs:
   #     - name: Setup Flutter
   #       uses: subosito/flutter-action@v2
   #       with:
-  #         flutter-version: "3.32.5"
+  #         flutter-version: ${{ env.FLUTTER_VERSION }}
   #         channel: "stable"
   #         cache: true
   #
-  #     - name: Install dependencies
+  #     - name: Get dependencies
   #       run: flutter pub get
   #
   #     - name: Run tests
-  #       run: flutter test
+  #       run: flutter test --coverage
+  #
+  #     - name: Upload coverage to Codecov
+  #       uses: codecov/codecov-action@v3
+  #       with:
+  #         file: coverage/lcov.info
