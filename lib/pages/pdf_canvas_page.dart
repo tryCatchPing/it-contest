@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -236,7 +236,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
   void _selectColor(ScribbleNotifier notifier) {
     // 색상 선택 다이얼로그 구현 (예: showDialog, ColorPicker)
     // 임시로 색상 변경
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Color'),
@@ -276,7 +276,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
   void _selectStrokeWidth(ScribbleNotifier notifier) {
     // 굵기 선택 다이얼로그 구현 (예: showDialog, Slider)
     // 임시로 굵기 변경
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Stroke Width'),
