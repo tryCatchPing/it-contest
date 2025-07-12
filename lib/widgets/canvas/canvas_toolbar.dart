@@ -4,6 +4,22 @@ import 'package:scribble/scribble.dart';
 import '../../models/canvas_color.dart';
 import 'color_button.dart';
 
+/* TODO
+ * 펜 선택
+ * 펜 색상
+ * 지우개 선택
+ * 하이라이터 선택
+ * 하이라이터 색상
+ * 펜 / 하이라이터 굵기 (펜 별 굵기 옵션 달라짐)
+ */
+
+enum DrawingMode {
+  pen,
+  eraser,
+  highlighter,
+  linker,
+}
+
 class CanvasToolbar extends StatelessWidget {
   const CanvasToolbar({
     required this.notifier,
@@ -17,11 +33,113 @@ class CanvasToolbar extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        DrawingModeToolbar(notifier: notifier),
+        const VerticalDivider(width: 32),
+        ColorToolbar(notifier: notifier),
+        const VerticalDivider(width: 32),
         ColorToolbar(notifier: notifier),
         const VerticalDivider(width: 32),
         StrokeToolbar(notifier: notifier),
       ],
     );
+  }
+}
+
+class DrawingModeToolbar extends StatelessWidget {
+  const DrawingModeToolbar({
+    required this.notifier,
+    super.key,
+  });
+
+  final ScribbleNotifier notifier;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _buildDrawingModeButton(
+          context,
+          drawingMode: DrawingMode.pen,
+          tooltip: 'Pen',
+        ),
+        _buildDrawingModeButton(
+          context,
+          drawingMode: DrawingMode.eraser,
+          tooltip: 'Eraser',
+        ),
+        _buildDrawingModeButton(
+          context,
+          drawingMode: DrawingMode.highlighter,
+          tooltip: 'Highlighter',
+        ),
+        _buildDrawingModeButton(
+          context,
+          drawingMode: DrawingMode.linker,
+          tooltip: 'Linker',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDrawingModeButton(
+    BuildContext context, {
+    required DrawingMode drawingMode,
+    required String tooltip,
+  }) {
+    return ValueListenableBuilder<ScribbleState>(
+      valueListenable: notifier,
+      builder: (context, state, child) {
+        // 현재 선택된 도구인지 확인
+        final isSelected = _isDrawingModeSelected(state, drawingMode);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: isSelected ? Colors.blue : null,
+              foregroundColor: isSelected ? Colors.white : null,
+            ),
+            onPressed: () {
+              switch (drawingMode) {
+                case DrawingMode.pen:
+                  notifier.setColor(CanvasColor.defaultColor.color);
+                  break;
+                case DrawingMode.eraser:
+                  notifier.setEraser();
+                  break;
+                case DrawingMode.highlighter:
+                  notifier.setColor(CanvasColor.defaultColor.highlighterColor);
+                  notifier.setStrokeWidth(20);
+                  break;
+                case DrawingMode.linker:
+                  notifier.setColor(Colors.pinkAccent.withValues(alpha: 0.5));
+                  notifier.setStrokeWidth(30);
+                  break;
+              }
+            },
+            child: Text(tooltip),
+          ),
+        );
+      },
+    );
+  }
+
+  bool _isDrawingModeSelected(ScribbleState state, DrawingMode mode) {
+    switch (mode) {
+      case DrawingMode.eraser:
+        return state is Erasing;
+      case DrawingMode.pen:
+        return state is Drawing &&
+            state.selectedColor == CanvasColor.defaultColor.color.toARGB32();
+      case DrawingMode.highlighter:
+        return state is Drawing &&
+            state.selectedColor ==
+                CanvasColor.defaultColor.highlighterColor.toARGB32();
+      case DrawingMode.linker:
+        return state is Drawing &&
+            state.selectedColor ==
+                Colors.pinkAccent.withValues(alpha: 0.5).toARGB32();
+    }
   }
 }
 
@@ -159,6 +277,7 @@ class StrokeToolbar extends StatelessWidget {
   }
 }
 
+// TODO(xodnd): notifier 에서 처리하는 것이 좋을 것 같음.
 class PressureToggle extends StatelessWidget {
   const PressureToggle({
     required this.simulatePressure,
@@ -171,32 +290,11 @@ class PressureToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: simulatePressure ? Colors.orange[50] : Colors.green[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: simulatePressure ? Colors.orange[200]! : Colors.green[200]!,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            simulatePressure ? Icons.speed : Icons.check_circle,
-            color: simulatePressure ? Colors.orange[600] : Colors.green[600],
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Switch.adaptive(
-            value: simulatePressure,
-            onChanged: onChanged,
-            activeColor: Colors.orange[600],
-            inactiveTrackColor: Colors.green[200],
-          ),
-        ],
-      ),
+    return Switch.adaptive(
+      value: simulatePressure,
+      onChanged: onChanged,
+      activeColor: Colors.orange[600],
+      inactiveTrackColor: Colors.green[200],
     );
   }
 }
@@ -222,12 +320,10 @@ class PointerModeSwitcher extends StatelessWidget {
             ButtonSegment(
               value: ScribblePointerMode.all,
               icon: Icon(Icons.touch_app),
-              label: Text('All pointers'),
             ),
             ButtonSegment(
               value: ScribblePointerMode.penOnly,
               icon: Icon(Icons.draw),
-              label: Text('Pen only'),
             ),
           ],
           selected: {state.allowedPointersMode},

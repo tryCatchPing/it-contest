@@ -25,14 +25,14 @@ class CanvasPage extends StatefulWidget {
 }
 
 class _CanvasPageState extends State<CanvasPage> {
-  /// ScribbleNotifier: 그리기 상태를 관리하는 핵심 컨트롤러
+  /// CustomScribbleNotifier: 그리기 상태를 관리하는 핵심 컨트롤러
   ///
   /// 이 객체는 다음을 관리합니다:
   /// - 현재 그림 데이터 (스케치)
-  /// - 선택된 색상, 굵기, 도구 상태
+  /// - 선택된 색상, 굵기, 도구 상태 (펜/하이라이터/지우개)
   /// - Undo/Redo 히스토리
-  /// - 그리기 모드 (펜/지우개)
-  late ScribbleNotifier notifier;
+  /// - 그리기 모드 및 도구별 설정
+  late CustomScribbleNotifier notifier;
 
   /// TransformationController: 확대/축소 상태를 관리하는 컨트롤러
   ///
@@ -56,6 +56,7 @@ class _CanvasPageState extends State<CanvasPage> {
     // 컨트롤러 초기화
     notifier = CustomScribbleNotifier(
       maxHistoryLength: 100,
+      // widths 는 자동 관리되긴 할 것임
       widths: const [1, 3, 5, 7],
       // pressureCurve: Curves.easeInOut,
       canvasIndex: widget.canvasIndex,
@@ -160,6 +161,8 @@ class _CanvasPageState extends State<CanvasPage> {
                       children: [
                         CanvasToolbar(notifier: notifier),
                         // 필압 토글 컨트롤
+                        // TODO(xodnd): notifier 에서 처리하는 것이 좋을 것 같음.
+                        // TODO(xodnd): simplify 0 으로 수정 필요
                         PressureToggle(
                           simulatePressure: _simulatePressure,
                           onChanged: (value) {
