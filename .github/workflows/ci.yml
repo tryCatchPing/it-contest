@@ -59,33 +59,33 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
 
-      # 더 안정적인 Android SDK 설정 방법
       - name: Setup Android SDK (Android only)
+        if: matrix.build-target == 'android'
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
+
+      # 라이센스는 매번 승인해야 함 (새로운 VM이므로)
+      - name: Accept Android SDK licenses (Android only)
         if: matrix.build-target == 'android'
         run: |
           set -e
-          echo "Setting up Android SDK..."
-
-          # Android 환경 변수 설정
-          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
-          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-
-          # SDK Manager 확인
-          which sdkmanager || echo "sdkmanager not found in PATH"
-          ls -la /usr/local/lib/android/sdk/cmdline-tools/latest/bin/ || true
-
-          # SDK 라이센스 자동 승인 (에러 무시)
           echo "Accepting Android SDK licenses..."
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          echo "Android SDK licenses accepted"
 
-          # 필수 SDK 컴포넌트 설치
-          echo "Installing required Android SDK components..."
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;27.0.12077973" || true
-
-          echo "✅ Android SDK setup completed"
+      # PDF 패키지들이 요구하는 NDK 버전들 설치
+      - name: Install required Android components (Android only)
+        if: matrix.build-target == 'android'
+        run: |
+          set -e
+          echo "Installing Android SDK components..."
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "ndk;27.0.12077973" \
+            "ndk;29.0.13599879" || true
+          echo "Android SDK components installed"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -124,44 +124,16 @@ jobs:
           flutter pub get
           flutter pub deps
 
-          # pdfx 패키지 설치 확인
-          echo "Checking installed packages..."
-          flutter pub deps | grep -E "(pdfx|file_picker)" || true
-
-      # PDF.js 설정 최적화: 의존성 확인 후 설치
-      - name: Setup PDF.js for web (Web only)
-        if: matrix.build-target == 'web'
-        run: |
-          echo "Checking PDF.js configuration..."
-
-          # web/index.html이 이미 PDF.js를 포함하고 있는지 확인
-          if [ -f "web/index.html" ] && grep -q "pdfjs-dist" web/index.html; then
-            echo "✅ PDF.js already configured, skipping installation"
-          else
-            echo "📦 Installing PDF.js for web..."
-
-            # pdfx 패키지가 있는지 확인
-            if flutter pub deps | grep -q "pdfx"; then
-              flutter pub run pdfx:install_web
-              echo "✅ PDF.js setup completed"
-            else
-              echo "⚠️ pdfx package not found, skipping PDF.js installation"
-              echo "This might be expected if PDF functionality is not yet implemented"
-            fi
-          fi
-
       - name: Verify web/index.html (Web only)
         if: matrix.build-target == 'web'
         run: |
           if [ -f "web/index.html" ]; then
             echo "✅ web/index.html exists"
-
-            # PDF.js 설정이 있으면 확인, 없으면 경고만
             if grep -q "pdfjs-dist" web/index.html; then
               echo "✅ PDF.js scripts found in web/index.html"
             else
-              echo "⚠️ PDF.js scripts not found in web/index.html"
-              echo "This might be expected if PDF functionality is not implemented yet"
+              echo "❌ PDF.js scripts not found in web/index.html"
+              exit 1
             fi
           else
             echo "❌ web/index.html not found"
@@ -177,34 +149,13 @@ jobs:
         if: matrix.build-target == 'web'
         run: |
           echo "Building web application..."
-          # Flutter 3.32.5에서 --web-renderer 옵션이 제거됨
-          flutter build web --release
+          flutter build web --release --web-renderer html
           echo "Web build completed"
-
-      - name: Verify web build output (Web only)
-        if: matrix.build-target == 'web'
-        run: |
-          if [ -d "build/web" ]; then
-            echo "✅ Web build output exists"
-            ls -la build/web/
-          else
-            echo "❌ Web build output not found"
-            exit 1
-          fi
 
       - name: Build Android APK
         if: matrix.build-target == 'android'
         run: |
           echo "Building Android APK..."
-
-          # 환경 변수 재확인
-          echo "ANDROID_HOME: $ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
-
-          # Flutter doctor로 Android 설정 확인
-          flutter doctor -v
-
-          # Android 빌드 시도
           flutter build apk --debug --verbose
           echo "Android APK build completed"
 
