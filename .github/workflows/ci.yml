@@ -66,18 +66,24 @@ jobs:
           set -e
           echo "Setting up Android SDK..."
 
-          # SDK Manager 경로 설정
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
+          # Android 환경 변수 설정
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
 
-          # SDK 라이센스 자동 승인
+          # SDK Manager 확인
+          which sdkmanager || echo "sdkmanager not found in PATH"
+          ls -la /usr/local/lib/android/sdk/cmdline-tools/latest/bin/ || true
+
+          # SDK 라이센스 자동 승인 (에러 무시)
           echo "Accepting Android SDK licenses..."
-          yes | sdkmanager --licenses || true
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>/dev/null || true
 
           # 필수 SDK 컴포넌트 설치
           echo "Installing required Android SDK components..."
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
-          sdkmanager "ndk;27.0.12077973" "ndk;29.0.13599879" || true
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "ndk;27.0.12077973" || true
 
           echo "✅ Android SDK setup completed"
 
@@ -171,7 +177,8 @@ jobs:
         if: matrix.build-target == 'web'
         run: |
           echo "Building web application..."
-          flutter build web --release --web-renderer html
+          # Flutter 3.32.5에서 --web-renderer 옵션이 제거됨
+          flutter build web --release
           echo "Web build completed"
 
       - name: Verify web build output (Web only)
@@ -189,6 +196,15 @@ jobs:
         if: matrix.build-target == 'android'
         run: |
           echo "Building Android APK..."
+
+          # 환경 변수 재확인
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+
+          # Flutter doctor로 Android 설정 확인
+          flutter doctor -v
+
+          # Android 빌드 시도
           flutter build apk --debug --verbose
           echo "Android APK build completed"
 
