@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
@@ -127,15 +128,35 @@ class HomePage extends StatelessWidget {
                   color: const Color(0xFFF44336),
                   onTap: () async {
                     print('PDF 파일 열기 버튼 탭됨.');
+                    // 웹 플랫폼에서는 bytes로 파일을 읽어옵니다.
                     final result = await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
+                      withData: kIsWeb, // 웹일 경우 true로 설정하여 bytes를 로드
                     );
-                    if (result != null && result.files.single.path != null) {
-                      final filePath = result.files.single.path!;
-                      print('PDF 파일 선택됨: $filePath');
-                      // ignore: use_build_context_synchronously
-                      context.push('/pdf_canvas', extra: filePath);
+
+                    if (result != null) {
+                      if (kIsWeb) {
+                        // 웹: bytes 데이터를 extra로 전달
+                        final fileBytes = result.files.single.bytes;
+                        if (fileBytes != null) {
+                          print('PDF 파일 선택됨 (웹): ${fileBytes.length} bytes');
+                          // ignore: use_build_context_synchronously
+                          context.push('/pdf_canvas', extra: fileBytes);
+                        } else {
+                          print('웹에서 파일 bytes를 읽는 데 실패했습니다.');
+                        }
+                      } else {
+                        // 모바일/데스크탑: 파일 경로를 extra로 전달
+                        final filePath = result.files.single.path;
+                        if (filePath != null) {
+                          print('PDF 파일 선택됨: $filePath');
+                          // ignore: use_build_context_synchronously
+                          context.push('/pdf_canvas', extra: filePath);
+                        } else {
+                          print('파일 경로를 가져오는 데 실패했습니다.');
+                        }
+                      }
                     } else {
                       print('PDF 파일 선택 취소 또는 실패.');
                     }
