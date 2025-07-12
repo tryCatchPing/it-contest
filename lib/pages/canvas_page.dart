@@ -161,6 +161,8 @@ class _CanvasPageState extends State<CanvasPage> {
                       children: [
                         CanvasToolbar(notifier: notifier),
                         // 필압 토글 컨트롤
+                        // TODO(xodnd): notifier 에서 처리하는 것이 좋을 것 같음.
+                        // TODO(xodnd): simplify 0 으로 수정 필요
                         PressureToggle(
                           simulatePressure: _simulatePressure,
                           onChanged: (value) {
