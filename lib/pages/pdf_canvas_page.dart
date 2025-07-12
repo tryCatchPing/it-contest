@@ -1,14 +1,17 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:scribble/scribble.dart';
 
 class PdfCanvasPage extends StatefulWidget {
-  const PdfCanvasPage({required this.filePath, super.key});
+  const PdfCanvasPage({this.filePath, this.fileBytes, super.key})
+      : assert(filePath != null || fileBytes != null, 'filePath 또는 fileBytes 둘 중 하나는 반드시 제공되어야 합니다.');
 
-  final String filePath;
+  final String? filePath;
+  final Uint8List? fileBytes;
 
   @override
   State<PdfCanvasPage> createState() => _PdfCanvasPageState();
@@ -30,9 +33,18 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
   }
 
   Future<void> _loadPdf() async {
-    print('PDF 로딩 시작: ${widget.filePath}');
+    print('PDF 로딩 시작...');
     try {
-      _pdfDocument = await PdfDocument.openFile(widget.filePath);
+      if (kIsWeb && widget.fileBytes != null) {
+        print('웹 환경에서 bytes로 PDF를 엽니다.');
+        _pdfDocument = await PdfDocument.openData(widget.fileBytes!);
+      } else if (widget.filePath != null) {
+        print('파일 경로로 PDF를 엽니다: ${widget.filePath}');
+        _pdfDocument = await PdfDocument.openFile(widget.filePath!);
+      } else {
+        throw Exception('PDF를 열 수 있는 파일 경로 또는 데이터가 없습니다.');
+      }
+
       _pageCount = _pdfDocument!.pagesCount;
       print('PDF 로드 성공. 총 페이지 수: $_pageCount');
 
@@ -50,7 +62,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
         final pageImage = await page.render(
           width: page.width,
           height: page.height,
-          format: PdfPageImageFormat.jpeg, // JPEG 형식으로 변경하여 호환성 확인
+          format: PdfPageImageFormat.jpeg,
         );
         if (pageImage != null) {
           _pageImages.add(pageImage.bytes);
@@ -70,10 +82,8 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
       print('모든 페이지 렌더링 완료.');
     } catch (e) {
       print('PDF 로딩 중 에러 발생: $e');
-      // 사용자에게 에러 메시지 표시
       setState(() {
         _isLoading = false;
-        // 에러 메시지를 화면에 표시할 변수 추가 가능
       });
     } finally {
       setState(() {
