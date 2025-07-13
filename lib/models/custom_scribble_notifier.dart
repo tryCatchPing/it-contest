@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
 import '../data/sketches.dart';
-import 'canvas_color.dart';
 import 'tool_mode.dart';
 
 class CustomScribbleNotifier extends ScribbleNotifier {
@@ -35,51 +34,35 @@ class CustomScribbleNotifier extends ScribbleNotifier {
     sketches[canvasIndex].jsonData = jsonEncode(json);
   }
 
-  void setPen() {
-    toolMode = ToolMode.pen;
-    temporaryValue = ScribbleState.drawing(
-      sketch: value.sketch,
-      selectedColor: CanvasColor.defaultColor.color.toARGB32(),
-      selectedWidth: 3, // 펜 기본 굵기
-      allowedPointersMode: value.allowedPointersMode,
-      scaleFactor: value.scaleFactor,
-      activePointerIds: value.activePointerIds,
-    );
+  /// 공통 도구 변경 메서드
+  void _setTool(ToolMode newToolMode) {
+    toolMode = newToolMode;
+
+    if (newToolMode.isDrawingMode) {
+      temporaryValue = ScribbleState.drawing(
+        sketch: value.sketch,
+        selectedColor: newToolMode.defaultColor.toARGB32(),
+        selectedWidth: newToolMode.defaultWidth,
+        allowedPointersMode: value.allowedPointersMode,
+        scaleFactor: value.scaleFactor,
+        activePointerIds: value.activePointerIds,
+      );
+    } else {
+      // 지우개 모드
+      temporaryValue = ScribbleState.erasing(
+        sketch: value.sketch,
+        selectedWidth: newToolMode.defaultWidth,
+        scaleFactor: value.scaleFactor,
+        allowedPointersMode: value.allowedPointersMode,
+        activePointerIds: value.activePointerIds,
+      );
+    }
   }
 
-  void setHighlighter() {
-    toolMode = ToolMode.highlighter;
-    temporaryValue = ScribbleState.drawing(
-      sketch: value.sketch,
-      selectedColor: CanvasColor.defaultColor.highlighterColor.toARGB32(),
-      selectedWidth: 20, // 하이라이터 기본 굵기
-      allowedPointersMode: value.allowedPointersMode,
-      scaleFactor: value.scaleFactor,
-      activePointerIds: value.activePointerIds,
-    );
-  }
+  void setPen() => _setTool(ToolMode.pen);
+  void setHighlighter() => _setTool(ToolMode.highlighter);
+  void setLinker() => _setTool(ToolMode.linker);
 
   @override
-  void setEraser() {
-    toolMode = ToolMode.eraser;
-    temporaryValue = ScribbleState.erasing(
-      sketch: value.sketch,
-      selectedWidth: 5, // 지우개 기본 굵기
-      scaleFactor: value.scaleFactor,
-      allowedPointersMode: value.allowedPointersMode,
-      activePointerIds: value.activePointerIds,
-    );
-  }
-
-  void setLinker() {
-    toolMode = ToolMode.linker;
-    temporaryValue = ScribbleState.drawing(
-      sketch: value.sketch,
-      selectedColor: Colors.pinkAccent.withValues(alpha: 0.5).toARGB32(),
-      selectedWidth: 30, // 링커 기본 굵기
-      allowedPointersMode: value.allowedPointersMode,
-      scaleFactor: value.scaleFactor,
-      activePointerIds: value.activePointerIds,
-    );
-  }
+  void setEraser() => _setTool(ToolMode.eraser);
 }

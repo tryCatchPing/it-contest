@@ -77,10 +77,23 @@ class ColorToolbar extends StatelessWidget {
         child: ColorButton(
           color: color,
           isActive: state is Drawing && state.selectedColor == color.toARGB32(),
-          onPressed: () => {
-            if (toolMode == ToolMode.pen) notifier.setPen(),
-            if (toolMode == ToolMode.highlighter) notifier.setHighlighter(),
-            notifier.setColor(color),
+          onPressed: () {
+            // 현재 도구가 아닌 경우 먼저 도구 변경
+            if (notifier.toolMode != toolMode) {
+              switch (toolMode) {
+                case ToolMode.pen:
+                  notifier.setPen();
+                case ToolMode.highlighter:
+                  notifier.setHighlighter();
+                case ToolMode.linker:
+                  notifier.setLinker();
+                case ToolMode.eraser:
+                  // 지우개는 색상 변경 불가
+                  return;
+              }
+            }
+            // 색상 변경
+            notifier.setColor(color);
           },
           tooltip: tooltip,
         ),
