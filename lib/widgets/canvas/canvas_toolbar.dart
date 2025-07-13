@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
 import '../../models/canvas_color.dart';
+import '../../models/custom_scribble_notifier.dart';
+import '../../models/tool_mode.dart';
 import 'color_button.dart';
 
 /* TODO
@@ -13,20 +15,13 @@ import 'color_button.dart';
  * 펜 / 하이라이터 굵기 (펜 별 굵기 옵션 달라짐)
  */
 
-enum DrawingMode {
-  pen,
-  eraser,
-  highlighter,
-  linker,
-}
-
 class CanvasToolbar extends StatelessWidget {
   const CanvasToolbar({
     required this.notifier,
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +46,7 @@ class DrawingModeToolbar extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
@@ -59,23 +54,23 @@ class DrawingModeToolbar extends StatelessWidget {
       children: [
         _buildDrawingModeButton(
           context,
-          drawingMode: DrawingMode.pen,
-          tooltip: 'Pen',
+          drawingMode: ToolMode.pen,
+          tooltip: ToolMode.pen.displayName,
         ),
         _buildDrawingModeButton(
           context,
-          drawingMode: DrawingMode.eraser,
-          tooltip: 'Eraser',
+          drawingMode: ToolMode.eraser,
+          tooltip: ToolMode.eraser.displayName,
         ),
         _buildDrawingModeButton(
           context,
-          drawingMode: DrawingMode.highlighter,
-          tooltip: 'Highlighter',
+          drawingMode: ToolMode.highlighter,
+          tooltip: ToolMode.highlighter.displayName,
         ),
         _buildDrawingModeButton(
           context,
-          drawingMode: DrawingMode.linker,
-          tooltip: 'Linker',
+          drawingMode: ToolMode.linker,
+          tooltip: ToolMode.linker.displayName,
         ),
       ],
     );
@@ -83,37 +78,37 @@ class DrawingModeToolbar extends StatelessWidget {
 
   Widget _buildDrawingModeButton(
     BuildContext context, {
-    required DrawingMode drawingMode,
+    required ToolMode drawingMode,
     required String tooltip,
   }) {
     return ValueListenableBuilder<ScribbleState>(
       valueListenable: notifier,
       builder: (context, state, child) {
-        // 현재 선택된 도구인지 확인
-        final isSelected = _isDrawingModeSelected(state, drawingMode);
-
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: isSelected ? Colors.blue : null,
-              foregroundColor: isSelected ? Colors.white : null,
+              backgroundColor: notifier.toolMode == drawingMode
+                  ? Colors.blue
+                  : null,
+              foregroundColor: notifier.toolMode == drawingMode
+                  ? Colors.white
+                  : null,
             ),
             onPressed: () {
+              print('onPressed: $drawingMode');
               switch (drawingMode) {
-                case DrawingMode.pen:
-                  notifier.setColor(CanvasColor.defaultColor.color);
+                case ToolMode.pen:
+                  notifier.setPen();
                   break;
-                case DrawingMode.eraser:
+                case ToolMode.eraser:
                   notifier.setEraser();
                   break;
-                case DrawingMode.highlighter:
-                  notifier.setColor(CanvasColor.defaultColor.highlighterColor);
-                  notifier.setStrokeWidth(20);
+                case ToolMode.highlighter:
+                  notifier.setHighlighter();
                   break;
-                case DrawingMode.linker:
-                  notifier.setColor(Colors.pinkAccent.withValues(alpha: 0.5));
-                  notifier.setStrokeWidth(30);
+                case ToolMode.linker:
+                  notifier.setLinker();
                   break;
               }
             },
@@ -123,24 +118,6 @@ class DrawingModeToolbar extends StatelessWidget {
       },
     );
   }
-
-  bool _isDrawingModeSelected(ScribbleState state, DrawingMode mode) {
-    switch (mode) {
-      case DrawingMode.eraser:
-        return state is Erasing;
-      case DrawingMode.pen:
-        return state is Drawing &&
-            state.selectedColor == CanvasColor.defaultColor.color.toARGB32();
-      case DrawingMode.highlighter:
-        return state is Drawing &&
-            state.selectedColor ==
-                CanvasColor.defaultColor.highlighterColor.toARGB32();
-      case DrawingMode.linker:
-        return state is Drawing &&
-            state.selectedColor ==
-                Colors.pinkAccent.withValues(alpha: 0.5).toARGB32();
-    }
-  }
 }
 
 class ColorToolbar extends StatelessWidget {
@@ -149,7 +126,7 @@ class ColorToolbar extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +174,7 @@ class EraserButton extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
@@ -220,7 +197,7 @@ class StrokeToolbar extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
@@ -305,7 +282,7 @@ class PointerModeSwitcher extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
