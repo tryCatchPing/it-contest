@@ -37,49 +37,25 @@ class CustomScribbleNotifier extends ScribbleNotifier {
 
   void setPen() {
     toolMode = ToolMode.pen;
-    temporaryValue = value.map(
-      // 현재 상태가 drawing 일 때
-      drawing: (s) => ScribbleState.drawing(
-        sketch: s.sketch,
-        selectedColor: CanvasColor.defaultColor.color.toARGB32(),
-        selectedWidth: 3, // 펜 기본 굵기
-        allowedPointersMode: s.allowedPointersMode,
-        scaleFactor: s.scaleFactor,
-        activePointerIds: s.activePointerIds,
-      ),
-      // 현재 상태가 erasing 일 때, 펜 모드로 변경할 것임
-      erasing: (s) => ScribbleState.drawing(
-        sketch: s.sketch,
-        selectedColor: CanvasColor.defaultColor.color.toARGB32(),
-        selectedWidth: 3, // 펜 기본 굵기
-        allowedPointersMode: s.allowedPointersMode,
-        scaleFactor: s.scaleFactor,
-        activePointerIds: s.activePointerIds,
-      ),
+    temporaryValue = ScribbleState.drawing(
+      sketch: value.sketch,
+      selectedColor: CanvasColor.defaultColor.color.toARGB32(),
+      selectedWidth: 3, // 펜 기본 굵기
+      allowedPointersMode: value.allowedPointersMode,
+      scaleFactor: value.scaleFactor,
+      activePointerIds: value.activePointerIds,
     );
   }
 
   void setHighlighter() {
     toolMode = ToolMode.highlighter;
-    temporaryValue = value.map(
-      // 현재 상태가 drawing 일 때
-      drawing: (s) => ScribbleState.drawing(
-        sketch: s.sketch,
-        selectedColor: CanvasColor.defaultColor.highlighterColor.toARGB32(),
-        selectedWidth: 20, // 하이라이터 기본 굵기
-        allowedPointersMode: s.allowedPointersMode,
-        scaleFactor: s.scaleFactor,
-        activePointerIds: s.activePointerIds,
-      ),
-      // 현재 상태가 erasing 일 때, 펜 모드로 변경할 것임
-      erasing: (s) => ScribbleState.drawing(
-        sketch: s.sketch,
-        selectedColor: CanvasColor.defaultColor.highlighterColor.toARGB32(),
-        selectedWidth: 20, // 하이라이터 기본 굵기
-        allowedPointersMode: s.allowedPointersMode,
-        scaleFactor: s.scaleFactor,
-        activePointerIds: s.activePointerIds,
-      ),
+    temporaryValue = ScribbleState.drawing(
+      sketch: value.sketch,
+      selectedColor: CanvasColor.defaultColor.highlighterColor.toARGB32(),
+      selectedWidth: 20, // 하이라이터 기본 굵기
+      allowedPointersMode: value.allowedPointersMode,
+      scaleFactor: value.scaleFactor,
+      activePointerIds: value.activePointerIds,
     );
   }
 

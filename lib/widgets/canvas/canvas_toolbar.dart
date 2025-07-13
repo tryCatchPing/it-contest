@@ -5,6 +5,7 @@ import '../../models/canvas_color.dart';
 import '../../models/custom_scribble_notifier.dart';
 import '../../models/tool_mode.dart';
 import 'color_button.dart';
+import 'drawing_mode_toolbar.dart';
 
 /* TODO
  * 펜 선택
@@ -30,9 +31,9 @@ class CanvasToolbar extends StatelessWidget {
       children: [
         DrawingModeToolbar(notifier: notifier),
         const VerticalDivider(width: 32),
-        ColorToolbar(notifier: notifier),
+        ColorToolbar(notifier: notifier, toolMode: ToolMode.pen),
         const VerticalDivider(width: 32),
-        ColorToolbar(notifier: notifier),
+        ColorToolbar(notifier: notifier, toolMode: ToolMode.highlighter),
         const VerticalDivider(width: 32),
         StrokeToolbar(notifier: notifier),
       ],
@@ -40,93 +41,15 @@ class CanvasToolbar extends StatelessWidget {
   }
 }
 
-class DrawingModeToolbar extends StatelessWidget {
-  const DrawingModeToolbar({
-    required this.notifier,
-    super.key,
-  });
-
-  final CustomScribbleNotifier notifier;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _buildDrawingModeButton(
-          context,
-          drawingMode: ToolMode.pen,
-          tooltip: ToolMode.pen.displayName,
-        ),
-        _buildDrawingModeButton(
-          context,
-          drawingMode: ToolMode.eraser,
-          tooltip: ToolMode.eraser.displayName,
-        ),
-        _buildDrawingModeButton(
-          context,
-          drawingMode: ToolMode.highlighter,
-          tooltip: ToolMode.highlighter.displayName,
-        ),
-        _buildDrawingModeButton(
-          context,
-          drawingMode: ToolMode.linker,
-          tooltip: ToolMode.linker.displayName,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDrawingModeButton(
-    BuildContext context, {
-    required ToolMode drawingMode,
-    required String tooltip,
-  }) {
-    return ValueListenableBuilder<ScribbleState>(
-      valueListenable: notifier,
-      builder: (context, state, child) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: notifier.toolMode == drawingMode
-                  ? Colors.blue
-                  : null,
-              foregroundColor: notifier.toolMode == drawingMode
-                  ? Colors.white
-                  : null,
-            ),
-            onPressed: () {
-              print('onPressed: $drawingMode');
-              switch (drawingMode) {
-                case ToolMode.pen:
-                  notifier.setPen();
-                  break;
-                case ToolMode.eraser:
-                  notifier.setEraser();
-                  break;
-                case ToolMode.highlighter:
-                  notifier.setHighlighter();
-                  break;
-                case ToolMode.linker:
-                  notifier.setLinker();
-                  break;
-              }
-            },
-            child: Text(tooltip),
-          ),
-        );
-      },
-    );
-  }
-}
-
 class ColorToolbar extends StatelessWidget {
   const ColorToolbar({
     required this.notifier,
+    required this.toolMode,
     super.key,
   });
 
   final CustomScribbleNotifier notifier;
+  final ToolMode toolMode;
 
   @override
   Widget build(BuildContext context) {
@@ -138,18 +61,21 @@ class ColorToolbar extends StatelessWidget {
         ...CanvasColor.all.map(
           (canvasColor) => _buildColorButton(
             context,
-            color: canvasColor.color,
+            toolMode,
+            color: toolMode == ToolMode.highlighter
+                ? canvasColor.highlighterColor
+                : canvasColor.color,
             tooltip: canvasColor.displayName,
           ),
         ),
-        // 지우개 버튼
-        EraserButton(notifier: notifier),
       ],
     );
   }
 
+  // 각 색상 버튼만 ValueListenableBuilder 로 감싸서 색상 변경 시 애니메이션 적용
   Widget _buildColorButton(
-    BuildContext context, {
+    BuildContext context,
+    ToolMode toolMode, {
     required Color color,
     required String tooltip,
   }) {
@@ -160,32 +86,13 @@ class ColorToolbar extends StatelessWidget {
         child: ColorButton(
           color: color,
           isActive: state is Drawing && state.selectedColor == color.toARGB32(),
-          onPressed: () => notifier.setColor(color),
+          onPressed: () => {
+            if (toolMode == ToolMode.pen) notifier.setPen(),
+            if (toolMode == ToolMode.highlighter) notifier.setHighlighter(),
+            notifier.setColor(color),
+          },
           tooltip: tooltip,
         ),
-      ),
-    );
-  }
-}
-
-class EraserButton extends StatelessWidget {
-  const EraserButton({
-    required this.notifier,
-    super.key,
-  });
-
-  final CustomScribbleNotifier notifier;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<ScribbleState>(
-      valueListenable: notifier,
-      builder: (context, state, child) => ColorButton(
-        color: Colors.transparent,
-        outlineColor: Colors.black,
-        isActive: state is Erasing,
-        onPressed: () => notifier.setEraser(),
-        child: const Icon(Icons.cleaning_services),
       ),
     );
   }
