@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
 import '../../models/canvas_color.dart';
+import '../../models/custom_scribble_notifier.dart';
+import '../../models/tool_mode.dart';
 import 'color_button.dart';
+import 'drawing_mode_toolbar.dart';
 
 class CanvasToolbar extends StatelessWidget {
   const CanvasToolbar({
@@ -10,14 +13,18 @@ class CanvasToolbar extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ColorToolbar(notifier: notifier),
+        DrawingModeToolbar(notifier: notifier),
+        const VerticalDivider(width: 32),
+        ColorToolbar(notifier: notifier, toolMode: ToolMode.pen),
+        const VerticalDivider(width: 32),
+        ColorToolbar(notifier: notifier, toolMode: ToolMode.highlighter),
         const VerticalDivider(width: 32),
         StrokeToolbar(notifier: notifier),
       ],
@@ -28,10 +35,12 @@ class CanvasToolbar extends StatelessWidget {
 class ColorToolbar extends StatelessWidget {
   const ColorToolbar({
     required this.notifier,
+    required this.toolMode,
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
+  final ToolMode toolMode;
 
   @override
   Widget build(BuildContext context) {
@@ -43,18 +52,21 @@ class ColorToolbar extends StatelessWidget {
         ...CanvasColor.all.map(
           (canvasColor) => _buildColorButton(
             context,
-            color: canvasColor.color,
+            toolMode,
+            color: toolMode == ToolMode.highlighter
+                ? canvasColor.highlighterColor
+                : canvasColor.color,
             tooltip: canvasColor.displayName,
           ),
         ),
-        // 지우개 버튼
-        EraserButton(notifier: notifier),
       ],
     );
   }
 
+  // 각 색상 버튼만 ValueListenableBuilder 로 감싸서 색상 변경 시 애니메이션 적용
   Widget _buildColorButton(
-    BuildContext context, {
+    BuildContext context,
+    ToolMode toolMode, {
     required Color color,
     required String tooltip,
   }) {
@@ -65,32 +77,26 @@ class ColorToolbar extends StatelessWidget {
         child: ColorButton(
           color: color,
           isActive: state is Drawing && state.selectedColor == color.toARGB32(),
-          onPressed: () => notifier.setColor(color),
+          onPressed: () {
+            // 현재 도구가 아닌 경우 먼저 도구 변경
+            if (notifier.toolMode != toolMode) {
+              switch (toolMode) {
+                case ToolMode.pen:
+                  notifier.setPen();
+                case ToolMode.highlighter:
+                  notifier.setHighlighter();
+                case ToolMode.linker:
+                  notifier.setLinker();
+                case ToolMode.eraser:
+                  // 지우개는 색상 변경 불가
+                  return;
+              }
+            }
+            // 색상 변경
+            notifier.setColor(color);
+          },
           tooltip: tooltip,
         ),
-      ),
-    );
-  }
-}
-
-class EraserButton extends StatelessWidget {
-  const EraserButton({
-    required this.notifier,
-    super.key,
-  });
-
-  final ScribbleNotifier notifier;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<ScribbleState>(
-      valueListenable: notifier,
-      builder: (context, state, child) => ColorButton(
-        color: Colors.transparent,
-        outlineColor: Colors.black,
-        isActive: state is Erasing,
-        onPressed: () => notifier.setEraser(),
-        child: const Icon(Icons.cleaning_services),
       ),
     );
   }
@@ -102,7 +108,7 @@ class StrokeToolbar extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +118,7 @@ class StrokeToolbar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          for (final w in notifier.widths)
+          for (final w in notifier.toolMode.widths)
             _buildStrokeButton(
               context,
               strokeWidth: w,
@@ -159,6 +165,7 @@ class StrokeToolbar extends StatelessWidget {
   }
 }
 
+// TODO(xodnd): notifier 에서 처리하는 것이 좋을 것 같음.
 class PressureToggle extends StatelessWidget {
   const PressureToggle({
     required this.simulatePressure,
@@ -171,32 +178,11 @@ class PressureToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: simulatePressure ? Colors.orange[50] : Colors.green[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: simulatePressure ? Colors.orange[200]! : Colors.green[200]!,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            simulatePressure ? Icons.speed : Icons.check_circle,
-            color: simulatePressure ? Colors.orange[600] : Colors.green[600],
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Switch.adaptive(
-            value: simulatePressure,
-            onChanged: onChanged,
-            activeColor: Colors.orange[600],
-            inactiveTrackColor: Colors.green[200],
-          ),
-        ],
-      ),
+    return Switch.adaptive(
+      value: simulatePressure,
+      onChanged: onChanged,
+      activeColor: Colors.orange[600],
+      inactiveTrackColor: Colors.green[200],
     );
   }
 }
@@ -207,7 +193,7 @@ class PointerModeSwitcher extends StatelessWidget {
     super.key,
   });
 
-  final ScribbleNotifier notifier;
+  final CustomScribbleNotifier notifier;
 
   @override
   Widget build(BuildContext context) {
@@ -222,12 +208,10 @@ class PointerModeSwitcher extends StatelessWidget {
             ButtonSegment(
               value: ScribblePointerMode.all,
               icon: Icon(Icons.touch_app),
-              label: Text('All pointers'),
             ),
             ButtonSegment(
               value: ScribblePointerMode.penOnly,
               icon: Icon(Icons.draw),
-              label: Text('Pen only'),
             ),
           ],
           selected: {state.allowedPointersMode},

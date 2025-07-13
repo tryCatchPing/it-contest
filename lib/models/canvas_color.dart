@@ -15,6 +15,12 @@ enum CanvasColor {
   /// 실제 Color 값
   final Color color;
 
+  /// 하이라이터용 반투명 색상 (50% 투명도)
+  Color get highlighterColor => color.withAlpha(50);
+
+  /// 지정된 투명도로 색상 생성
+  Color withOpacity(double opacity) => color.withValues(alpha: opacity);
+
   /// 모든 색상 리스트 (UI 구성용)
   static List<CanvasColor> get all => CanvasColor.values;
 

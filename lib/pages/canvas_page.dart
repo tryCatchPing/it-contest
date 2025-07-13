@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
 import '../data/sketches.dart';
-import '../models/canvas_color.dart';
 import '../models/custom_scribble_notifier.dart';
+import '../models/tool_mode.dart';
 import '../widgets/canvas/canvas_actions.dart';
 import '../widgets/canvas/canvas_background.dart';
 import '../widgets/canvas/canvas_info.dart';
@@ -25,14 +25,14 @@ class CanvasPage extends StatefulWidget {
 }
 
 class _CanvasPageState extends State<CanvasPage> {
-  /// ScribbleNotifier: 그리기 상태를 관리하는 핵심 컨트롤러
+  /// CustomScribbleNotifier: 그리기 상태를 관리하는 핵심 컨트롤러
   ///
   /// 이 객체는 다음을 관리합니다:
   /// - 현재 그림 데이터 (스케치)
-  /// - 선택된 색상, 굵기, 도구 상태
+  /// - 선택된 색상, 굵기, 도구 상태 (펜/하이라이터/지우개)
   /// - Undo/Redo 히스토리
-  /// - 그리기 모드 (펜/지우개)
-  late ScribbleNotifier notifier;
+  /// - 그리기 모드 및 도구별 설정
+  late CustomScribbleNotifier notifier;
 
   /// TransformationController: 확대/축소 상태를 관리하는 컨트롤러
   ///
@@ -56,9 +56,12 @@ class _CanvasPageState extends State<CanvasPage> {
     // 컨트롤러 초기화
     notifier = CustomScribbleNotifier(
       maxHistoryLength: 100,
-      widths: const [1, 3, 5, 7],
+      // widths 는 자동 관리되긴 할 것임
+      // widths: const [1, 3, 5, 7],
       // pressureCurve: Curves.easeInOut,
       canvasIndex: widget.canvasIndex,
+      // TODO(xodnd): 초기 모드 설정 필요
+      toolMode: ToolMode.highlighter,
     );
 
     // 초기 스케치 설정
@@ -67,10 +70,9 @@ class _CanvasPageState extends State<CanvasPage> {
       addToUndoHistory: false, // 초기 설정이므로 undo 히스토리에 추가하지 않음
     );
 
-    // 기본 색상 설정
-    notifier.setColor(CanvasColor.defaultColor.color);
-    // 기본 굵기 설정
-    notifier.setStrokeWidth(3);
+    // toolMode에 따른 초기 설정 테스트중 - 성공
+    // TODO(xodnd): 펜 모드로 복구
+    notifier.setHighlighter();
 
     transformationController = TransformationController();
 
@@ -106,6 +108,7 @@ class _CanvasPageState extends State<CanvasPage> {
                   surfaceTintColor: Colors.white,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(6),
+                    // TODO(xodnd): 캔버스 기본 로딩 시 중앙 정렬 필요
                     child: InteractiveViewer(
                       transformationController: transformationController,
                       minScale: 0.3,
@@ -160,6 +163,8 @@ class _CanvasPageState extends State<CanvasPage> {
                       children: [
                         CanvasToolbar(notifier: notifier),
                         // 필압 토글 컨트롤
+                        // TODO(xodnd): notifier 에서 처리하는 것이 좋을 것 같음.
+                        // TODO(xodnd): simplify 0 으로 수정 필요
                         PressureToggle(
                           simulatePressure: _simulatePressure,
                           onChanged: (value) {
