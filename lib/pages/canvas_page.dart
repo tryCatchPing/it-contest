@@ -57,7 +57,7 @@ class _CanvasPageState extends State<CanvasPage> {
     notifier = CustomScribbleNotifier(
       maxHistoryLength: 100,
       // widths 는 자동 관리되긴 할 것임
-      widths: const [1, 3, 5, 7],
+      // widths: const [1, 3, 5, 7],
       // pressureCurve: Curves.easeInOut,
       canvasIndex: widget.canvasIndex,
       // TODO(xodnd): 초기 모드 설정 필요

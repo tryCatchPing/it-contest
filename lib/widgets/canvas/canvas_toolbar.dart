@@ -7,15 +7,6 @@ import '../../models/tool_mode.dart';
 import 'color_button.dart';
 import 'drawing_mode_toolbar.dart';
 
-/* TODO
- * 펜 선택
- * 펜 색상
- * 지우개 선택
- * 하이라이터 선택
- * 하이라이터 색상
- * 펜 / 하이라이터 굵기 (펜 별 굵기 옵션 달라짐)
- */
-
 class CanvasToolbar extends StatelessWidget {
   const CanvasToolbar({
     required this.notifier,
@@ -114,7 +105,7 @@ class StrokeToolbar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          for (final w in notifier.widths)
+          for (final w in notifier.toolMode.widths)
             _buildStrokeButton(
               context,
               strokeWidth: w,

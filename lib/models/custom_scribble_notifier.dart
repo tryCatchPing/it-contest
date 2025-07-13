@@ -12,7 +12,7 @@ class CustomScribbleNotifier extends ScribbleNotifier {
     super.sketch,
     super.allowedPointersMode,
     super.maxHistoryLength,
-    super.widths,
+    super.widths = const [1, 3, 5, 7],
     super.pressureCurve,
     super.simplifier,
     super.simplificationTolerance,
