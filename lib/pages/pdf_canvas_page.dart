@@ -5,6 +5,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:scribble/scribble.dart';
+import 'package:isar/isar.dart';
+
+import '../main.dart'; // isar 인스턴스 접근을 위해 main.dart 임포트
+import '../models/canvas_object.dart';
 
 class PdfCanvasPage extends StatefulWidget {
   const PdfCanvasPage({this.filePath, this.fileBytes, super.key})
@@ -20,7 +24,7 @@ class PdfCanvasPage extends StatefulWidget {
 class _PdfCanvasPageState extends State<PdfCanvasPage> {
   PdfDocument? _pdfDocument;
   final List<Uint8List> _pageImages = [];
-  final Map<int, ScribbleNotifier> _scribbleNotifiers = {};
+  final Map<int, CustomScribbleNotifier> _scribbleNotifiers = {}; // 타입 변경
   int _currentPage = 0; // PageView는 0부터 시작하므로 0으로 초기화
   int _pageCount = 0;
   bool _isLoading = true;
@@ -72,9 +76,11 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
         }
         await page.close();
 
-        _scribbleNotifiers[i] = ScribbleNotifier(
+        _scribbleNotifiers[i] = CustomScribbleNotifier( // CustomScribbleNotifier로 변경
           maxHistoryLength: 100,
           widths: const [1, 3, 5, 7],
+          canvasIndex: i, // 페이지 번호를 canvasIndex로 전달
+          toolMode: ToolMode.pen, // 초기 도구 모드 설정
         );
         _scribbleNotifiers[i]!.setStrokeWidth(3);
         _scribbleNotifiers[i]!.setColor(Colors.black);
@@ -99,6 +105,77 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
       notifier.dispose();
     }
     super.dispose();
+  }
+
+  // 캔버스 탭 처리 (하이라이터 클릭 감지)
+  void _handleCanvasTap(Offset localPosition, int pageNumber) async {
+    if (_isDrawingMode) return; // 필기 모드에서는 탭 감지 안함
+
+    print('캔버스 탭 감지: $localPosition (페이지: $pageNumber)');
+
+    // 현재 페이지의 링크 하이라이터 획들을 조회합니다.
+    final linkHighlights = await isar.canvasObjects
+        .filter()
+        .pageNumberEqualTo(pageNumber)
+        .isLinkHighlightEqualTo(true)
+        .findAll();
+
+    CanvasObject? clickedHighlight;
+    for (final highlight in linkHighlights) {
+      if (highlight.minX != null &&
+          highlight.minY != null &&
+          highlight.maxX != null &&
+          highlight.maxY != null) {
+        // 획의 바운딩 박스 안에 탭 좌표가 있는지 확인
+        if (localPosition.dx >= highlight.minX! &&
+            localPosition.dx <= highlight.maxX! &&
+            localPosition.dy >= highlight.minY! &&
+            localPosition.dy <= highlight.maxY!) {
+          clickedHighlight = highlight;
+          break;
+        }
+      }
+    }
+
+    if (clickedHighlight != null) {
+      print('링크 하이라이터 클릭됨: ${clickedHighlight.id}');
+      // TODO: 클릭된 하이라이터에 대한 UI (링크 찾기/생성 팝업) 표시
+      _showLinkOptions(clickedHighlight);
+    } else {
+      print('클릭된 링크 하이라이터 없음.');
+    }
+  }
+
+  void _showLinkOptions(CanvasObject highlight) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('링크 옵션'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.search),
+              title: const Text('링크 찾기'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: 링크 찾기 로직 구현
+                print('링크 찾기 클릭됨');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.add_link),
+              title: const Text('링크 생성'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: 링크 생성 로직 구현
+                print('링크 생성 클릭됨');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -152,6 +229,16 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
                               drawPen: true,
                             ),
                           ),
+                          // 클릭 감지 레이어 (필기 모드일 때는 터치 무시, 보기 모드일 때만 활성화)
+                          if (!_isDrawingMode) // 보기 모드일 때만 클릭 감지
+                            GestureDetector(
+                              onTapUp: (details) {
+                                _handleCanvasTap(details.localPosition, index + 1);
+                              },
+                              child: Container( // GestureDetector가 영역을 가지도록 투명한 컨테이너 추가
+                                color: Colors.transparent, // 투명하게 설정
+                              ),
+                            ),
                         ],
                       );
                     },
@@ -233,7 +320,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
     ];
   }
 
-  void _selectColor(ScribbleNotifier notifier) {
+  void _selectColor(CustomScribbleNotifier notifier) {
     // 색상 선택 다이얼로그 구현 (예: showDialog, ColorPicker)
     // 임시로 색상 변경
     showDialog<void>(
@@ -273,7 +360,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
     );
   }
 
-  void _selectStrokeWidth(ScribbleNotifier notifier) {
+  void _selectStrokeWidth(CustomScribbleNotifier notifier) {
     // 굵기 선택 다이얼로그 구현 (예: showDialog, Slider)
     // 임시로 굵기 변경
     showDialog<void>(

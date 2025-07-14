@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
 import '../../data/sketches.dart';
+import '../../models/custom_scribble_notifier.dart';
 
 class CanvasActions {
-  static void saveSketch(BuildContext context, ScribbleNotifier notifier) {
+  static void saveSketch(BuildContext context, CustomScribbleNotifier notifier) {
     final json = notifier.currentSketch.toJson();
     final data = SketchData(
       name: 'temp',
@@ -16,7 +17,7 @@ class CanvasActions {
     sketches.add(data);
   }
 
-  static void showImage(BuildContext context, ScribbleNotifier notifier) async {
+  static void showImage(BuildContext context, CustomScribbleNotifier notifier) async {
     final image = notifier.renderImage();
     if (!context.mounted) return;
 
@@ -42,7 +43,7 @@ class CanvasActions {
     );
   }
 
-  static void showJson(BuildContext context, ScribbleNotifier notifier) {
+  static void showJson(BuildContext context, CustomScribbleNotifier notifier) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(

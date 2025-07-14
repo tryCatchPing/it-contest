@@ -1,46 +1,22 @@
 import 'package:flutter/material.dart';
 
-import 'canvas_color.dart';
-
 enum ToolMode {
-  pen('Pen', [1, 3, 5, 7]),
-  eraser('Eraser', [3, 5, 7]),
-  highlighter('Highlighter', [10, 20, 30]),
-  linker('Linker', [10, 20, 30]);
+  pen('펜', Icons.edit, Colors.black, 3.0, true),
+  highlighter('형광펜', Icons.highlight, Colors.yellow, 10.0, true),
+  eraser('지우개', Icons.cleaning_services, Colors.transparent, 10.0, false),
+  linker('링커', Icons.link, Colors.blue, 5.0, true); // 새로운 링커 모드
 
-  const ToolMode(this.displayName, this.widths);
+  const ToolMode(
+    this.displayName,
+    this.icon,
+    this.defaultColor,
+    this.defaultWidth,
+    this.isDrawingMode,
+  );
 
   final String displayName;
-  final List<double> widths;
-
-  /// 각 도구의 기본 굵기 (widths 리스트의 첫 번째 또는 중간 값)
-  double get defaultWidth {
-    switch (this) {
-      case ToolMode.pen:
-        return 3.0;
-      case ToolMode.eraser:
-        return 5.0;
-      case ToolMode.highlighter:
-        return 20.0;
-      case ToolMode.linker:
-        return 20.0;
-    }
-  }
-
-  /// 각 도구의 기본 색상
-  Color get defaultColor {
-    switch (this) {
-      case ToolMode.pen:
-        return CanvasColor.defaultColor.color;
-      case ToolMode.eraser:
-        return Colors.transparent; // 지우개는 색상 없음
-      case ToolMode.highlighter:
-        return CanvasColor.defaultColor.highlighterColor;
-      case ToolMode.linker:
-        return Colors.pinkAccent.withValues(alpha: 0.5);
-    }
-  }
-
-  /// 각 도구가 그리기 모드인지 지우기 모드인지
-  bool get isDrawingMode => this != ToolMode.eraser;
+  final IconData icon;
+  final Color defaultColor;
+  final double defaultWidth;
+  final bool isDrawingMode;
 }

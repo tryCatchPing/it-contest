@@ -2,9 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
+import 'package:isar/isar.dart';
 
 import '../data/sketches.dart';
 import 'tool_mode.dart';
+import 'canvas_object.dart';
+import '../main.dart'; // isar 인스턴스 접근을 위해 main.dart 임포트
 
 class CustomScribbleNotifier extends ScribbleNotifier {
   CustomScribbleNotifier({
@@ -29,7 +32,26 @@ class CustomScribbleNotifier extends ScribbleNotifier {
     _saveSketch();
   }
 
-  void _saveSketch() {
+  void _saveSketch() async {
+    // 현재 그려진 획을 가져옵니다.
+    final lastStroke = currentSketch.strokes.lastOrNull;
+
+    if (lastStroke != null) {
+      // ScribbleStroke를 CanvasObject로 변환합니다.
+      final canvasObject = CanvasObject.fromScribbleStroke(
+        stroke: lastStroke,
+        pageNumber: 1, // TODO: 실제 페이지 번호로 변경 필요
+        isLinkHighlight: toolMode == ToolMode.linker,
+      );
+
+      // IsarDB에 저장합니다.
+      await isar.writeTxn(() async {
+        await isar.canvasObjects.put(canvasObject);
+      });
+      print('CanvasObject 저장됨: ${canvasObject.id}');
+    }
+
+    // 기존 스케치 저장 로직 (임시 유지 또는 삭제)
     final json = currentSketch.toJson();
     sketches[canvasIndex].jsonData = jsonEncode(json);
   }

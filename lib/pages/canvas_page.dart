@@ -56,12 +56,8 @@ class _CanvasPageState extends State<CanvasPage> {
     // 컨트롤러 초기화
     notifier = CustomScribbleNotifier(
       maxHistoryLength: 100,
-      // widths 는 자동 관리되긴 할 것임
-      // widths: const [1, 3, 5, 7],
-      // pressureCurve: Curves.easeInOut,
       canvasIndex: widget.canvasIndex,
-      // TODO(xodnd): 초기 모드 설정 필요
-      toolMode: ToolMode.highlighter,
+      toolMode: ToolMode.pen, // 초기 모드를 펜으로 설정
     );
 
     // 초기 스케치 설정
@@ -70,9 +66,8 @@ class _CanvasPageState extends State<CanvasPage> {
       addToUndoHistory: false, // 초기 설정이므로 undo 히스토리에 추가하지 않음
     );
 
-    // toolMode에 따른 초기 설정 테스트중 - 성공
-    // TODO(xodnd): 펜 모드로 복구
-    notifier.setHighlighter();
+    // 초기 도구 설정
+    notifier.setPen();
 
     transformationController = TransformationController();
 
@@ -81,7 +76,7 @@ class _CanvasPageState extends State<CanvasPage> {
 
   @override
   void dispose() {
-    // notifier.dispose();
+    notifier.dispose(); // notifier dispose 추가
     transformationController.dispose();
     super.dispose();
   }

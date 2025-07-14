@@ -7,7 +7,24 @@ import 'pages/home_page.dart';
 import 'pages/note_list_page.dart';
 import 'pages/pdf_canvas_page.dart';
 
-void main() => runApp(const MyApp());
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'models/canvas_object.dart';
+import 'models/note.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final dir = await getApplicationDocumentsDirectory();
+  final isar = await Isar.open(
+    [
+      NoteSchema,
+      CanvasObjectSchema,
+    ],
+    directory: dir.path,
+  );
+  runApp(const MyApp());
+}
 
 final _router = GoRouter(
   routes: [
