@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../data/sketches.dart';
 import '../models/custom_scribble_notifier.dart';
+import '../models/note.dart';
 import '../models/tool_mode.dart';
 import '../widgets/canvas/canvas_actions.dart';
 import '../widgets/canvas/canvas_background.dart';
@@ -12,13 +12,10 @@ import '../widgets/canvas/canvas_toolbar.dart';
 class CanvasPage extends StatefulWidget {
   const CanvasPage({
     super.key,
-    this.noteTitle = 'temp_note',
-    required this.canvasIndex,
+    required this.note,
   });
 
-  final String? noteTitle;
-
-  final int canvasIndex;
+  final Note note;
 
   @override
   State<CanvasPage> createState() => _CanvasPageState();
@@ -51,37 +48,50 @@ class _CanvasPageState extends State<CanvasPage> {
   final double canvasWidth = 2000.0;
   final double canvasHeight = 2000.0;
 
+  // 다중 페이지 추가
+  late int totalPages;
+  final Map<int, CustomScribbleNotifier> _scribbleNotifiers = {};
+
   @override
   void initState() {
-    // 컨트롤러 초기화
-    notifier = CustomScribbleNotifier(
-      maxHistoryLength: 100,
-      // widths 는 자동 관리되긴 할 것임
-      // widths: const [1, 3, 5, 7],
-      // pressureCurve: Curves.easeInOut,
-      canvasIndex: widget.canvasIndex,
-      // TODO(xodnd): 초기 모드 설정 필요
-      toolMode: ToolMode.highlighter,
-    );
-
-    // 초기 스케치 설정
-    notifier.setSketch(
-      sketch: sketches[widget.canvasIndex].toSketch(),
-      addToUndoHistory: false, // 초기 설정이므로 undo 히스토리에 추가하지 않음
-    );
-
-    // toolMode에 따른 초기 설정 테스트중 - 성공
-    // TODO(xodnd): 펜 모드로 복구
-    notifier.setHighlighter();
-
     transformationController = TransformationController();
+
+    // 다중 페이지 추가
+    totalPages = widget.note.pages.length;
+
+    // pdf 지담 로직이랑 동일
+    for (int i = 0; i < totalPages; i++) {
+      final currentNotifier = CustomScribbleNotifier(
+        maxHistoryLength: 100,
+        // widths 는 자동 관리되긴 할 것임
+        // widths: const [1, 3, 5, 7],
+        // pressureCurve: Curves.easeInOut,
+        // 이후 페이지 넘버로 수정
+        canvasIndex: i,
+        toolMode: ToolMode.pen,
+      );
+      currentNotifier.setPen();
+      // 초기 집입 시 모든 페이지 로딩 및 notifier 초기화
+      currentNotifier.setSketch(
+        sketch: widget.note.pages[i].toSketch(),
+        addToUndoHistory: false, // 초기 설정이므로 undo 히스토리에 추가하지 않음
+      );
+      _scribbleNotifiers[i] = currentNotifier;
+    }
+
+    notifier = _scribbleNotifiers[0]!;
 
     super.initState();
   }
 
   @override
   void dispose() {
-    // notifier.dispose();
+    // 모든 페이지의 notifier들을 정리하여 메모리 누수 방지
+    for (final notifier in _scribbleNotifiers.values) {
+      notifier.dispose();
+    }
+    _scribbleNotifiers.clear();
+
     transformationController.dispose();
     super.dispose();
   }
@@ -91,7 +101,7 @@ class _CanvasPageState extends State<CanvasPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(widget.noteTitle ?? 'temp_note'),
+        title: Text(widget.note.title),
         actions: _buildActions(context),
       ),
       body: Padding(

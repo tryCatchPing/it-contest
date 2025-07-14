@@ -1,7 +1,9 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'data/notes.dart';
 import 'pages/canvas_page.dart';
 import 'pages/home_page.dart';
 import 'pages/note_list_page.dart';
@@ -18,15 +20,16 @@ final _router = GoRouter(
     ),
     // 📝 노트 목록 페이지
     GoRoute(
-      path: '/canvas',
+      path: '/note_list',
       builder: (context, state) => const NoteListPage(),
     ),
     // 🎨 특정 캔버스 페이지 (파라미터로 인덱스 전달)
     GoRoute(
-      path: '/canvas/:canvasIndex',
+      path: '/note_list/:noteId',
       builder: (context, state) {
-        final canvasIndex = int.parse(state.pathParameters['canvasIndex']!);
-        return CanvasPage(canvasIndex: canvasIndex);
+        final noteId = state.pathParameters['noteId']!;
+        // 추후 노트별 수정 필요. 일단은 tmpNote 사용으로 하드코딩
+        return CanvasPage(note: tmpNote);
       },
     ),
     // 📄 PDF 캔버스 페이지

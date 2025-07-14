@@ -1,7 +1,7 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
 
 /// 🏠 테스트용 홈페이지
 ///
@@ -112,8 +112,8 @@ class HomePage extends StatelessWidget {
                     // 2. main.dart의 GoRouter에서 해당 라우트를 찾아 CanvasPage 생성
                     // 3. 새 페이지가 현재 페이지 위에 Push됨 (스택 구조)
                     // 4. 사용자에게는 새 화면이 나타나는 것처럼 보임
-                    print('🎨 Canvas Page로 이동 중...');
-                    context.push('/canvas');
+                    print('🎨 Note List Page로 이동 중...');
+                    context.push('/note_list');
                   },
                 ),
 

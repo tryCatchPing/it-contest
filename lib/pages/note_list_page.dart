@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../data/sketches.dart';
+import '../data/notes.dart';
 import '../widgets/navigation_card.dart';
 
 class NoteListPage extends StatelessWidget {
@@ -46,13 +46,14 @@ class NoteListPage extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      for (var i = 0; i < sketches.length; ++i)
+                      for (var i = 0; i < tmpNotes.length; ++i)
                         NavigationCard(
                           icon: Icons.brush,
-                          title: sketches[i].name,
-                          subtitle: sketches[i].description,
+                          title: tmpNotes[i].title,
+                          subtitle: '${tmpNotes[i].pages.length} 페이지',
                           color: const Color(0xFF6750A4),
-                          onTap: () => context.push('/canvas/$i'),
+                          onTap: () =>
+                              context.push('/note_list/${tmpNotes[i].noteId}'),
                         ),
                     ],
                   ),
