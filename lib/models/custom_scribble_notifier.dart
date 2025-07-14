@@ -1,9 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../data/sketches.dart';
+import 'page.dart' as page_model;
 import 'tool_mode.dart';
 
 class CustomScribbleNotifier extends ScribbleNotifier {
@@ -17,10 +15,12 @@ class CustomScribbleNotifier extends ScribbleNotifier {
     super.simplificationTolerance,
     required this.canvasIndex,
     required this.toolMode,
+    this.page, // 멀티페이지용 Page 객체 (선택사항)
   });
 
   final int canvasIndex;
   ToolMode toolMode;
+  final page_model.Page? page; // 멀티페이지에서 사용할 Page 객체
 
   /// 자동저장 구현
   @override
@@ -30,8 +30,10 @@ class CustomScribbleNotifier extends ScribbleNotifier {
   }
 
   void _saveSketch() {
-    final json = currentSketch.toJson();
-    sketches[canvasIndex].jsonData = jsonEncode(json);
+    // 멀티페이지 - Page 객체가 있으면 해당 Page에 저장
+    if (page != null) {
+      page!.updateFromSketch(currentSketch);
+    }
   }
 
   /// 공통 도구 변경 메서드
