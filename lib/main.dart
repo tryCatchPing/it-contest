@@ -27,7 +27,7 @@ final _router = GoRouter(
     GoRoute(
       path: '/note_list/:noteId',
       builder: (context, state) {
-        final noteId = state.pathParameters['noteId']!;
+        // final noteId = state.pathParameters['noteId']!;
         // 추후 노트별 수정 필요. 일단은 tmpNote 사용으로 하드코딩
         return CanvasPage(note: tmpNote);
       },
