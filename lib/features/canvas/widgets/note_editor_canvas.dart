@@ -1,0 +1,76 @@
+import 'package:flutter/material.dart';
+
+import '../constants/note_editor_constant.dart';
+import '../notifiers/custom_scribble_notifier.dart';
+import 'note_page_view_item.dart';
+import 'toolbar/note_editor_toolbar.dart';
+
+/// 📱 캔버스 영역을 담당하는 위젯
+///
+/// 다음을 포함합니다:
+/// - 다중 페이지 뷰 (PageView)
+/// - 그리기 도구 모음 (Toolbar)
+class NoteEditorCanvas extends StatelessWidget {
+  const NoteEditorCanvas({
+    super.key,
+    required this.totalPages,
+    required this.currentPageIndex,
+    required this.pageController,
+    required this.scribbleNotifiers,
+    required this.currentNotifier,
+    required this.transformationController,
+    required this.simulatePressure,
+    required this.onPageChanged,
+    required this.onPressureToggleChanged,
+  });
+
+  final int totalPages;
+  final int currentPageIndex;
+  final PageController pageController;
+  final Map<int, CustomScribbleNotifier> scribbleNotifiers;
+  final CustomScribbleNotifier currentNotifier;
+  final TransformationController transformationController;
+  final bool simulatePressure;
+  final ValueChanged<int> onPageChanged;
+  final ValueChanged<bool> onPressureToggleChanged;
+
+  // 캔버스 크기 상수
+  static const double _canvasWidth = NoteEditorConstants.canvasWidth;
+  static const double _canvasHeight = NoteEditorConstants.canvasHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 64),
+      child: Column(
+        children: [
+          // 캔버스 영역 - 남은 공간을 자동으로 모두 채움
+          Expanded(
+            child: PageView.builder(
+              controller: pageController,
+              itemCount: totalPages,
+              onPageChanged: onPageChanged,
+              itemBuilder: (context, index) {
+                return NotePageViewItem(
+                  pageController: pageController,
+                  totalPages: totalPages,
+                  notifier: scribbleNotifiers[index]!,
+                  transformationController: transformationController,
+                  simulatePressure: simulatePressure,
+                );
+              },
+            ),
+          ),
+          NoteEditorToolbar(
+            notifier: currentNotifier,
+            canvasWidth: _canvasWidth,
+            canvasHeight: _canvasHeight,
+            transformationController: transformationController,
+            simulatePressure: simulatePressure,
+            onPressureToggleChanged: onPressureToggleChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
