@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../shared/routing/app_routes.dart';
+import '../../../shared/widgets/navigation_card.dart';
 import '../data/notes.dart';
-import '../widgets/navigation_card.dart';
 
 class NoteListPage extends StatelessWidget {
   const NoteListPage({super.key});
@@ -13,7 +14,7 @@ class NoteListPage extends StatelessWidget {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text(
-          'IT Contest - Flutter App',
+          '노트 목록',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -30,7 +31,7 @@ class NoteListPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 🎯 앱 로고/타이틀 영역
+                // 🎯 노트 목록 영역
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -46,15 +47,32 @@ class NoteListPage extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      for (var i = 0; i < tmpNotes.length; ++i)
+                      Text(
+                        '저장된 노트들',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF1C1B1F),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // 노트 카드들
+                      for (var i = 0; i < tmpNotes.length; ++i) ...[
                         NavigationCard(
                           icon: Icons.brush,
                           title: tmpNotes[i].title,
                           subtitle: '${tmpNotes[i].pages.length} 페이지',
                           color: const Color(0xFF6750A4),
-                          onTap: () =>
-                              context.push('/note_list/${tmpNotes[i].noteId}'),
+                          onTap: () {
+                            print('📝 노트 편집: ${tmpNotes[i].noteId}');
+                            // 🚀 타입 안전한 네비게이션 사용
+                            context.pushNamed(
+                              AppRoutes.noteEditName,
+                              pathParameters: {'noteId': tmpNotes[i].noteId},
+                            );
+                          },
                         ),
+                        if (i < tmpNotes.length - 1) const SizedBox(height: 16),
+                      ],
                     ],
                   ),
                 ),
