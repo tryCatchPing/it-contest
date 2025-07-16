@@ -1,8 +1,8 @@
 import 'package:go_router/go_router.dart';
 
 import '../../../features/notes/data/notes.dart';
-import '../../../pages/canvas_page.dart';
 import '../../../shared/routing/app_routes.dart';
+import '../pages/canvas_page.dart';
 
 /// 🎨 캔버스 기능 관련 라우트 설정
 ///

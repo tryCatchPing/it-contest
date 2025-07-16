@@ -3,9 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../pages/home_page.dart';
-import '../../../pages/pdf_canvas_page.dart';
 import '../../../shared/routing/app_routes.dart';
+import '../../canvas/pages/pdf_canvas_page.dart';
+import '../pages/home_page.dart';
 
 /// 🏠 홈 기능 관련 라우트 설정
 ///
