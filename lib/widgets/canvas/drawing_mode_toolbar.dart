@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
+import '../../features/canvas/models/tool_mode.dart';
 import '../../models/custom_scribble_notifier.dart';
-import '../../models/tool_mode.dart';
 
 class DrawingModeToolbar extends StatelessWidget {
   const DrawingModeToolbar({
