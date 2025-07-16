@@ -5,9 +5,8 @@ import '../../notes/models/note.dart';
 import '../models/tool_mode.dart';
 import '../notifiers/custom_scribble_notifier.dart';
 import '../widgets/background_placeholder.dart';
-import '../widgets/canvas_info.dart';
-import '../widgets/canvas_toolbar.dart';
 import '../widgets/editor_actions_bar.dart';
+import '../widgets/editor_tool_bar_section.dart';
 
 class CanvasPage extends StatefulWidget {
   const CanvasPage({
@@ -191,50 +190,14 @@ class _CanvasPageState extends State<CanvasPage> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      alignment: WrapAlignment.spaceBetween,
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
-                        CanvasToolbar(notifier: notifier),
-                        // 필압 토글 컨트롤
-                        // TODO(xodnd): notifier 에서 처리하는 것이 좋을 것 같음.
-                        // TODO(xodnd): simplify 0 으로 수정 필요
-                        PressureToggle(
-                          simulatePressure: _simulatePressure,
-                          onChanged: (value) {
-                            setState(() {
-                              _simulatePressure = value;
-                            });
-                          },
-                        ),
-                        const SizedBox.shrink(),
-                        PointerModeSwitcher(notifier: notifier),
-                      ],
-                    ),
-                  ),
-                  const Divider(
-                    height: 32,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 📊 캔버스와 뷰포트 정보를 표시하는 위젯
-                  CanvasInfo(
-                    canvasWidth: _canvasWidth,
-                    canvasHeight: _canvasHeight,
-                    transformationController: transformationController,
-                  ),
-
-                  const SizedBox.shrink(),
-                ],
-              ),
+            EditorToolBarSection(
+              notifier: notifier,
+              canvasWidth: _canvasWidth,
+              canvasHeight: _canvasHeight,
+              transformationController: transformationController,
+              simulatePressure: _simulatePressure,
+              onPressureToggleChanged: (value) =>
+                  setState(() => _simulatePressure = value),
             ),
           ],
         ),
