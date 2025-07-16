@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// 색상 버튼 위젯
+///
+/// 캔버스에서 사용할 색상 버튼을 생성합니다.
 class ColorButton extends StatelessWidget {
   const ColorButton({
     required this.color,
@@ -23,6 +26,14 @@ class ColorButton extends StatelessWidget {
 
   final String? tooltip;
 
+  /// 색상 버튼 위젯 생성
+  ///
+  /// [color] - 색상
+  /// [isActive] - 활성 상태
+  /// [onPressed] - 버튼 클릭 시 호출할 콜백
+  /// [outlineColor] - 테두리 색상
+  /// [child] - 버튼 아이콘
+  /// [tooltip] - 버튼에 표시할 텍스트
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(

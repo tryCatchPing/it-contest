@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
+import '../features/canvas/models/custom_scribble_notifier.dart';
 import '../features/canvas/models/tool_mode.dart';
-import '../models/custom_scribble_notifier.dart';
+import '../features/canvas/widgets/background_placeholder.dart';
+import '../features/canvas/widgets/canvas_actions.dart';
+import '../features/canvas/widgets/canvas_info.dart';
+import '../features/canvas/widgets/canvas_toolbar.dart';
 import '../models/note.dart';
-import '../widgets/canvas/canvas_actions.dart';
-import '../widgets/canvas/canvas_background.dart';
-import '../widgets/canvas/canvas_info.dart';
-import '../widgets/canvas/canvas_toolbar.dart';
 
 class CanvasPage extends StatefulWidget {
   const CanvasPage({
@@ -165,7 +165,7 @@ class _CanvasPageState extends State<CanvasPage> {
                                 child: Stack(
                                   children: [
                                     // 배경 레이어 (PDF 이미지)
-                                    const CanvasBackground(
+                                    const BackgroundPlaceholder(
                                       width: _canvasWidth,
                                       height: _canvasHeight,
                                     ),
@@ -278,7 +278,7 @@ class _CanvasPageState extends State<CanvasPage> {
       IconButton(
         icon: const Icon(Icons.save),
         tooltip: 'Save',
-        onPressed: () => CanvasActions.saveSketch(context, notifier),
+        onPressed: () => notifier.saveSketch(),
       ),
     ];
   }

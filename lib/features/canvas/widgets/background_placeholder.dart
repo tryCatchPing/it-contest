@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
-class CanvasBackground extends StatelessWidget {
-  const CanvasBackground({
+/// 캔버스 임시 배경 표시 위젯
+///
+/// 캔버스의 배경을 표시합니다.
+class BackgroundPlaceholder extends StatelessWidget {
+  const BackgroundPlaceholder({
     required this.width,
     required this.height,
     super.key,
@@ -12,12 +15,6 @@ class CanvasBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 내부 로직 구성 필요 - 그냥 PDF-to-Image 사용할까
-    return _buildPlaceholder();
-  }
-
-  /// 플레이스홀더 위젯 (배경 이미지가 없을 때 표시)
-  Widget _buildPlaceholder() {
     return Container(
       width: width,
       height: height,

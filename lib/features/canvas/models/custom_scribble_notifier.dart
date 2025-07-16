@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../features/canvas/models/tool_mode.dart';
-import 'page.dart' as page_model;
+import '../../../models/page.dart' as page_model;
+import 'tool_mode.dart';
 
 class CustomScribbleNotifier extends ScribbleNotifier {
   CustomScribbleNotifier({
@@ -26,10 +26,10 @@ class CustomScribbleNotifier extends ScribbleNotifier {
   @override
   void onPointerUp(PointerUpEvent event) {
     super.onPointerUp(event);
-    _saveSketch();
+    saveSketch();
   }
 
-  void _saveSketch() {
+  void saveSketch() {
     // 멀티페이지 - Page 객체가 있으면 해당 Page에 저장
     if (page != null) {
       page!.updateFromSketch(currentSketch);
