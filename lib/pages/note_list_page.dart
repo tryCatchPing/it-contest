@@ -1,67 +1,165 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:isar/isar.dart';
 
-import '../data/sketches.dart';
-import '../widgets/navigation_card.dart';
+import '../main.dart' as app_main;
+import '../models/note.dart';
+import 'canvas_page.dart';
 
-class NoteListPage extends StatelessWidget {
-  const NoteListPage({super.key});
+typedef NoteCreatedCallback = void Function();
+
+class NoteListPage extends StatefulWidget {
+  const NoteListPage({super.key, this.isLinkMode = false, this.onNoteTap});
+
+  final bool isLinkMode; // 링크 대상 노트를 선택하는 모드인지 여부
+  final Function(int noteId)? onNoteTap; // 링크 대상 노트 선택 시 호출될 콜백
+
+  @override
+  State<NoteListPage> createState() => _NoteListPageState();
+}
+
+class _NoteListPageState extends State<NoteListPage> {
+  List<Note> notes = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotes();
+  }
+
+  Future<void> _loadNotes() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final loadedNotes = await app_main.isar.collection<Note>().where().findAll();
+      setState(() {
+        notes = loadedNotes;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('노트 로딩 중 오류 발생: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      // 사용자에게 오류 메시지 표시 (예: ScaffoldMessenger)
+    }
+  }
+
+  Future<void> _createNewNote() async {
+    final newNote = Note()
+      ..title = '새 노트 ${notes.length + 1}'
+      ..creationDate = DateTime.now()
+      ..lastModifiedDate = DateTime.now();
+
+    await app_main.isar.writeTxn(() async {
+      await app_main.isar.collection<Note>().put(newNote);
+    });
+
+    _loadNotes(); // 목록 새로고침
+  }
+
+  Future<void> _deleteNote(int id) async {
+    await app_main.isar.writeTxn(() async {
+      await app_main.isar.collection<Note>().delete(id);
+    });
+    _loadNotes(); // 목록 새로고침
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          'IT Contest - Flutter App',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: const Color(0xFF6750A4),
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // 🎯 앱 로고/타이틀 영역
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      for (var i = 0; i < sketches.length; ++i)
-                        NavigationCard(
-                          icon: Icons.brush,
-                          title: sketches[i].name,
-                          subtitle: sketches[i].description,
-                          color: const Color(0xFF6750A4),
-                          onTap: () => context.push('/canvas/$i'),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
+        title: Text(widget.isLinkMode ? '링크할 노트 선택' : '내 노트'),
+        actions: [
+          if (!widget.isLinkMode) // 링크 모드가 아닐 때만 새 노트 버튼 표시
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _createNewNote,
+              tooltip: '새 노트 만들기',
             ),
-          ),
-        ),
+        ],
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : notes.isEmpty
+              ? Center(
+                  child: Text(
+                    '아직 노트가 없습니다.\n오른쪽 상단의 + 버튼을 눌러 새 노트를 만들어보세요!',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: notes.length,
+                  itemBuilder: (context, index) {
+                    final note = notes[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        title: Text(note.title),
+                        subtitle: Text(
+                            '생성일: ${note.creationDate.toLocal().toString().substring(0, 16)}'),
+                        onTap: () {
+                          if (widget.isLinkMode) {
+                            // 링크 모드일 경우, 선택된 노트 ID를 콜백으로 전달
+                            widget.onNoteTap?.call(note.id);
+                          } else {
+                            // 일반 모드일 경우, 캔버스 페이지로 이동
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CanvasPage(
+                                  noteTitle: note.title,
+                                  canvasIndex: note.id,
+                                  onNoteCreated: _loadNotes, // 콜백 전달
+                                ),
+                              ),
+                            ).then((_) => _loadNotes()); // CanvasPage에서 돌아올 때 목록 새로고침
+                          }
+                        },
+                        trailing: widget.isLinkMode
+                            ? const Icon(Icons.arrow_forward_ios)
+                            : IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () => _showDeleteConfirmDialog(note),
+                                tooltip: '노트 삭제',
+                              ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+
+  void _showDeleteConfirmDialog(Note note) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('노트 삭제'),
+          content: Text('"${note.title}" 노트를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('삭제'),
+              onPressed: () {
+                _deleteNote(note.id);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

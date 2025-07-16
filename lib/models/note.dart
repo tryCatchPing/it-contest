@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'link.dart';
 
 part 'note.g.dart';
 
@@ -11,9 +12,11 @@ class Note {
   late DateTime creationDate;
   late DateTime lastModifiedDate;
 
-  // @Backlink(to: 'targetNote')
-  // final incomingLinks = IsarLinks<Link>();
+  // 이 노트에서 시작되는 링크들 (나가는 링크)
+  @Backlink(to: 'sourceNote')
+  final outgoingLinks = IsarLinks<MyLink>();
 
-  // @Backlink(to: 'sourceNote')
-  // final outgoingLinks = IsarLinks<Link>();
+  // 이 노트를 목적지로 하는 링크들 (들어오는 링크, 즉 백링크)
+  @Backlink(to: 'targetNote')
+  final incomingLinks = IsarLinks<MyLink>();
 }

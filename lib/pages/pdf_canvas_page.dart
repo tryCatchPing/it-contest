@@ -7,8 +7,14 @@ import 'package:pdfx/pdfx.dart';
 import 'package:scribble/scribble.dart';
 import 'package:isar/isar.dart';
 
-import '../main.dart'; // isar 인스턴스 접근을 위해 main.dart 임포트
+import '../main.dart' as app_main; // isar 인스턴스 접근을 위해 main.dart를 app_main으로 임포트
 import '../models/canvas_object.dart';
+import '../models/custom_scribble_notifier.dart'; // CustomScribbleNotifier 임포트
+import '../models/tool_mode.dart'; // ToolMode 임포트
+import '../models/link.dart' as models;
+import 'note_list_page.dart';
+import '../models/note.dart';
+import '../models/link.dart';
 
 class PdfCanvasPage extends StatefulWidget {
   const PdfCanvasPage({this.filePath, this.fileBytes, super.key})
@@ -28,7 +34,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
   int _currentPage = 0; // PageView는 0부터 시작하므로 0으로 초기화
   int _pageCount = 0;
   bool _isLoading = true;
-  bool _isDrawingMode = true; // 초기 모드는 필기 모드
+  bool _isDrawingMode = false; // 초기 모드는 보기 모드
 
   @override
   void initState() {
@@ -109,29 +115,38 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
 
   // 캔버스 탭 처리 (하이라이터 클릭 감지)
   void _handleCanvasTap(Offset localPosition, int pageNumber) async {
-    if (_isDrawingMode) return; // 필기 모드에서는 탭 감지 안함
+    if (_isDrawingMode) {
+      print('현재 필기 모드이므로 탭 감지 무시.');
+      return; // 필기 모드에서는 탭 감지 안함
+    }
 
     print('캔버스 탭 감지: $localPosition (페이지: $pageNumber)');
 
     // 현재 페이지의 링크 하이라이터 획들을 조회합니다.
-    final linkHighlights = await isar.canvasObjects
+    final linkHighlights = await app_main.isar.canvasObjects
         .filter()
-        .pageNumberEqualTo(pageNumber)
+        .noteIdEqualTo(pageNumber) // pageNumber 대신 noteId 사용
         .isLinkHighlightEqualTo(true)
         .findAll();
 
+    print('조회된 링크 하이라이터 수: ${linkHighlights.length}');
+
     CanvasObject? clickedHighlight;
     for (final highlight in linkHighlights) {
+      print('하이라이터 ID: ${highlight.id}, Bounds: (${highlight.minX}, ${highlight.minY}) - (${highlight.maxX}, ${highlight.maxY})');
       if (highlight.minX != null &&
           highlight.minY != null &&
           highlight.maxX != null &&
           highlight.maxY != null) {
         // 획의 바운딩 박스 안에 탭 좌표가 있는지 확인
-        if (localPosition.dx >= highlight.minX! &&
-            localPosition.dx <= highlight.maxX! &&
-            localPosition.dy >= highlight.minY! &&
-            localPosition.dy <= highlight.maxY!) {
+        // 획의 굵기를 고려하여 바운딩 박스를 확장합니다.
+        final double padding = highlight.strokeWidth / 2; // 획 굵기의 절반을 패딩으로 사용
+        if (localPosition.dx >= (highlight.minX! - padding) &&
+            localPosition.dx <= (highlight.maxX! + padding) &&
+            localPosition.dy >= (highlight.minY! - padding) &&
+            localPosition.dy <= (highlight.maxY! + padding)) {
           clickedHighlight = highlight;
+          print('히트 테스트 성공!');
           break;
         }
       }
@@ -140,41 +155,84 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
     if (clickedHighlight != null) {
       print('링크 하이라이터 클릭됨: ${clickedHighlight.id}');
       // TODO: 클릭된 하이라이터에 대한 UI (링크 찾기/생성 팝업) 표시
-      _showLinkOptions(clickedHighlight);
+      _showLinkCreationDialog(clickedHighlight);
     } else {
       print('클릭된 링크 하이라이터 없음.');
     }
   }
 
-  void _showLinkOptions(CanvasObject highlight) {
+  // 링크 생성 다이얼로그 표시
+  void _showLinkCreationDialog(CanvasObject highlight) {
+    final textController = TextEditingController();
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('링크 옵션'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.search),
-              title: const Text('링크 찾기'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: 링크 찾기 로직 구현
-                print('링크 찾기 클릭됨');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.add_link),
-              title: const Text('링크 생성'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: 링크 생성 로직 구현
-                print('링크 생성 클릭됨');
-              },
-            ),
-          ],
+        title: const Text('새 링크 생성'),
+        content: TextField(
+          controller: textController,
+          decoration: const InputDecoration(hintText: '링크 이름 (새 노트 제목)'),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              final linkName = textController.text;
+              if (linkName.isNotEmpty) {
+                Navigator.pop(context);
+                _createLinkAndNewNote(highlight, linkName);
+              }
+            },
+            child: const Text('생성'),
+          ),
+        ],
       ),
+    );
+  }
+
+  // 링크와 새 노트를 생성하는 로직
+  Future<void> _createLinkAndNewNote(CanvasObject highlight, String noteTitle) async {
+    final isar = app_main.isar;
+
+    // 1. 현재 노트(Source) 가져오기
+    final sourceNote = await isar.collection<Note>().get(_currentPage + 1);
+    if (sourceNote == null) {
+      print('오류: 현재 노트를 찾을 수 없습니다.');
+      return;
+    }
+
+    await isar.writeTxn(() async {
+      // 2. 새로운 노트(Target) 생성
+      final newNote = Note()
+        ..title = noteTitle
+        ..creationDate = DateTime.now()
+        ..lastModifiedDate = DateTime.now();
+      await isar.collection<Note>().put(newNote);
+
+      // 3. 새로운 링크 생성
+      final newLink = models.MyLink()
+        ..name = noteTitle
+        ..creationDate = DateTime.now();
+      
+      await isar.collection<models.MyLink>().put(newLink);
+
+      // 4. 관계 설정
+      newLink.sourceNote.value = sourceNote;
+      newLink.targetNote.value = newNote;
+      newLink.sourceHighlight.value = highlight;
+      await newLink.sourceNote.save();
+      await newLink.targetNote.save();
+      await newLink.sourceHighlight.save();
+
+      // 5. 하이라이트 객체에 링크 정보 업데이트 (선택적)
+      // IsarLink를 사용하면 highlight.linkId 같은 필드는 더 이상 필요 없습니다。
+      // 대신 Backlink를 통해 highlight에서 Link를 찾을 수 있습니다。
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("'$noteTitle' 노트와 링크가 생성되었습니다.")),
     );
   }
 
@@ -184,7 +242,15 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
       appBar: AppBar(
         title: Text(
             'PDF 필기 (${_currentPage + 1}/$_pageCount)'), // PageView는 0부터 시작
-        actions: _buildActions(),
+        actions: [
+        // 링크 찾기 버튼
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () => _showLinkSearchDialog(),
+          tooltip: '기존 노트에 연결',
+        ),
+        ..._buildActions(),
+      ],
       ),
       body: _isLoading
           ? const Center(child: Column(
@@ -226,7 +292,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
                             ignoring: !_isDrawingMode, // 필기 모드가 아닐 때 터치 무시
                             child: Scribble(
                               notifier: currentScribbleNotifier,
-                              drawPen: true,
+                              drawPen: currentScribbleNotifier.toolMode.isDrawingMode, // 도구 모드에 따라 동적으로 설정
                             ),
                           ),
                           // 클릭 감지 레이어 (필기 모드일 때는 터치 무시, 보기 모드일 때만 활성화)
@@ -245,8 +311,55 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
                   ),
                 ),
                 _buildToolbar(),
+                // 백링크 목록 표시
+                _buildBacklinks(),
               ],
             ),
+    );
+  }
+
+  // 백링크 목록을 빌드하는 위젯
+  Widget _buildBacklinks() {
+    return FutureBuilder<Note?>(
+      future: app_main.isar.notes.get(_currentPage + 1),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+        final note = snapshot.data!;
+        // IsarLink를 사용하려면 먼저 load()를 호출해야 합니다.
+        return FutureBuilder<void>(
+          future: note.incomingLinks.load(),
+          builder: (context, loadSnapshot) {
+            if (loadSnapshot.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            final backlinks = note.incomingLinks;
+            if (backlinks.isEmpty) {
+              return const Text('이 노트를 참조하는 다른 노트가 없습니다.');
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('백링크:', style: TextStyle(fontWeight: FontWeight.bold)),
+                ...backlinks.map((link) {
+                  return ListTile(
+                    title: Text(link.name),
+                    onTap: () {
+                      // 연결된 노트로 이동
+                      // PDF 캔버스 페이지에서는 다른 PDF 페이지로 이동하거나, 일반 캔버스 페이지로 이동할 수 있습니다.
+                      // 여기서는 간단히 해당 노트의 ID를 스낵바로 표시합니다.
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('연결된 노트 ID: ${link.sourceNote.value!.id}')),
+                      );
+                    },
+                  );
+                }),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -394,6 +507,27 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
           ],
         ),
       ),
+    );
+  }
+
+  // 링크 대상 노트를 검색하고 연결하는 다이얼로그
+  void _showLinkSearchDialog() {
+    // 이 다이얼로그는 특정 하이라이트와 연결되지 않고, 사용자가 직접 노트를 검색해서 연결을 시작합니다.
+    // 실제 앱에서는 어떤 하이라이트에 연결할지 선택하는 UI가 추가로 필요할 수 있습니다.
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('기존 노트에 연결'),
+          content: Text('이 기능은 아직 구현 중입니다. 먼저 하이라이트를 그리고, 해당 하이라이트를 클릭하여 새 링크를 생성해주세요.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

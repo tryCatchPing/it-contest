@@ -165,6 +165,21 @@ class HomePage extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
+                // 📊 그래프 뷰 버튼
+                HomePage.buildNavigationCard(
+                  context: context,
+                  icon: Icons.bubble_chart,
+                  title: '그래프 뷰',
+                  subtitle: '노트 간의 연결 관계를 시각적으로 확인하세요',
+                  color: const Color(0xFF9C27B0),
+                  onTap: () {
+                    print('📊 그래프 뷰 페이지로 이동 중...');
+                    context.push('/graph_view');
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
                 // 📊 프로젝트 정보
                 Container(
                   padding: const EdgeInsets.all(16),

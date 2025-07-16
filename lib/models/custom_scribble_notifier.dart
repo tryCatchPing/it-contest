@@ -2,12 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
-import 'package:isar/isar.dart';
 
-import '../data/sketches.dart';
-import 'tool_mode.dart';
+
+import '../main.dart' as app_main; // isar 인스턴스 접근을 위해 main.dart 임포트
 import 'canvas_object.dart';
-import '../main.dart'; // isar 인스턴스 접근을 위해 main.dart 임포트
+import 'tool_mode.dart';
 
 class CustomScribbleNotifier extends ScribbleNotifier {
   CustomScribbleNotifier({
@@ -16,8 +15,6 @@ class CustomScribbleNotifier extends ScribbleNotifier {
     super.maxHistoryLength,
     super.widths = const [1, 3, 5, 7],
     super.pressureCurve,
-    super.simplifier,
-    super.simplificationTolerance,
     required this.canvasIndex,
     required this.toolMode,
   });
@@ -34,26 +31,30 @@ class CustomScribbleNotifier extends ScribbleNotifier {
 
   void _saveSketch() async {
     // 현재 그려진 획을 가져옵니다.
-    final lastStroke = currentSketch.strokes.lastOrNull;
+    final lastStroke = currentSketch.lines.lastOrNull;
 
     if (lastStroke != null) {
       // ScribbleStroke를 CanvasObject로 변환합니다.
       final canvasObject = CanvasObject.fromScribbleStroke(
         stroke: lastStroke,
-        pageNumber: 1, // TODO: 실제 페이지 번호로 변경 필요
+        noteId: canvasIndex, // pageNumber 대신 noteId 사용
         isLinkHighlight: toolMode == ToolMode.linker,
       );
 
       // IsarDB에 저장합니다.
-      await isar.writeTxn(() async {
-        await isar.canvasObjects.put(canvasObject);
+      await app_main.isar.writeTxn(() async {
+        await app_main.isar.canvasObjects.put(canvasObject);
       });
       print('CanvasObject 저장됨: ${canvasObject.id}');
     }
 
-    // 기존 스케치 저장 로직 (임시 유지 또는 삭제)
-    final json = currentSketch.toJson();
-    sketches[canvasIndex].jsonData = jsonEncode(json);
+    
+  }
+
+  void loadSketchFromCanvasObjects(List<CanvasObject> canvasObjects) {
+    final lines = canvasObjects.map((obj) => obj.toScribbleStroke()).toList();
+    final sketch = Sketch(lines: lines);
+    setSketch(sketch: sketch, addToUndoHistory: false);
   }
 
   /// 공통 도구 변경 메서드
@@ -61,7 +62,7 @@ class CustomScribbleNotifier extends ScribbleNotifier {
     toolMode = newToolMode;
 
     if (newToolMode.isDrawingMode) {
-      temporaryValue = ScribbleState.drawing(
+      value = ScribbleState.drawing(
         sketch: value.sketch,
         selectedColor: newToolMode.defaultColor.toARGB32(),
         selectedWidth: newToolMode.defaultWidth,
@@ -71,7 +72,7 @@ class CustomScribbleNotifier extends ScribbleNotifier {
       );
     } else {
       // 지우개 모드
-      temporaryValue = ScribbleState.erasing(
+      value = ScribbleState.erasing(
         sketch: value.sketch,
         selectedWidth: newToolMode.defaultWidth,
         scaleFactor: value.scaleFactor,

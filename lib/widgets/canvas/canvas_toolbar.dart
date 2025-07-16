@@ -17,17 +17,20 @@ class CanvasToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        DrawingModeToolbar(notifier: notifier),
-        const VerticalDivider(width: 32),
-        ColorToolbar(notifier: notifier, toolMode: ToolMode.pen),
-        const VerticalDivider(width: 32),
-        ColorToolbar(notifier: notifier, toolMode: ToolMode.highlighter),
-        const VerticalDivider(width: 32),
-        StrokeToolbar(notifier: notifier),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DrawingModeToolbar(notifier: notifier),
+          const VerticalDivider(width: 32),
+          ColorToolbar(notifier: notifier, toolMode: ToolMode.pen),
+          const VerticalDivider(width: 32),
+          ColorToolbar(notifier: notifier, toolMode: ToolMode.highlighter),
+          const VerticalDivider(width: 32),
+          StrokeToolbar(notifier: notifier),
+        ],
+      ),
     );
   }
 }

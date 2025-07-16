@@ -22,7 +22,7 @@ class CanvasBackground extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.grey[50], // 원래 색상으로 변경
         border: Border.all(
           color: Colors.grey[300]!,
           width: 2,

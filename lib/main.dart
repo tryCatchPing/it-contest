@@ -6,20 +6,25 @@ import 'pages/canvas_page.dart';
 import 'pages/home_page.dart';
 import 'pages/note_list_page.dart';
 import 'pages/pdf_canvas_page.dart';
+import 'pages/graph_view_page.dart';
 
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'models/canvas_object.dart';
 import 'models/note.dart';
+import 'models/link.dart' as models; // Link 모델 임포트
+
+late Isar isar; // 전역 isar 인스턴스 선언
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final dir = await getApplicationDocumentsDirectory();
-  final isar = await Isar.open(
+  isar = await Isar.open( // isar 인스턴스 초기화
     [
       NoteSchema,
       CanvasObjectSchema,
+      models.MyLinkSchema, // MyLinkSchema 추가
     ],
     directory: dir.path,
   );
@@ -59,7 +64,6 @@ final _router = GoRouter(
         } else {
           // 예외 처리: 지원하지 않는 타입이거나 extra가 null일 경우
           // 에러 페이지로 리디렉션하거나 홈페이지로 보낼 수 있습니다.
-          // 여기서는 간단히 에러 메시지를 표시하는 Scaffold를 반환합니다.
           return const Scaffold(
             body: Center(
               child: Text('잘못된 데이터 타입입니다.'),
@@ -67,6 +71,11 @@ final _router = GoRouter(
           );
         }
       },
+    ),
+    // 📊 그래프 뷰 페이지
+    GoRoute(
+      path: '/graph_view',
+      builder: (context, state) => const GraphViewPage(),
     ),
   ],
   debugLogDiagnostics: true,
