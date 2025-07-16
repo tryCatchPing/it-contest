@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import 'package:scribble/scribble.dart';
 
-class PageModel {
+class NotePageModel {
   final String noteId;
   final String pageId;
   final int pageNumber;
   String jsonData;
 
-  PageModel({
+  NotePageModel({
     required this.noteId,
     required this.pageId,
     required this.pageNumber,
