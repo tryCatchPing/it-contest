@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../models/tool_mode.dart';
-import '../notifiers/custom_scribble_notifier.dart';
+import '../../models/tool_mode.dart';
+import '../../notifiers/custom_scribble_notifier.dart';
 
 /// 그리기 모드 툴바
 ///
 /// 펜, 지우개, 하이라이터, 링커 모드를 선택할 수 있습니다.
-class DrawingModeToolbar extends StatelessWidget {
-  const DrawingModeToolbar({
+class NoteEditorToolSelector extends StatelessWidget {
+  const NoteEditorToolSelector({
     required this.notifier,
     super.key,
   });
@@ -19,22 +19,22 @@ class DrawingModeToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _buildDrawingModeButton(
+        _buildToolButton(
           context,
           drawingMode: ToolMode.pen,
           tooltip: 'Pen',
         ),
-        _buildDrawingModeButton(
+        _buildToolButton(
           context,
           drawingMode: ToolMode.eraser,
           tooltip: ToolMode.eraser.displayName,
         ),
-        _buildDrawingModeButton(
+        _buildToolButton(
           context,
           drawingMode: ToolMode.highlighter,
           tooltip: ToolMode.highlighter.displayName,
         ),
-        _buildDrawingModeButton(
+        _buildToolButton(
           context,
           drawingMode: ToolMode.linker,
           tooltip: ToolMode.linker.displayName,
@@ -47,7 +47,7 @@ class DrawingModeToolbar extends StatelessWidget {
   ///
   /// [drawingMode] - 선택할 그리기 모드
   /// [tooltip] - 버튼에 표시할 텍스트
-  Widget _buildDrawingModeButton(
+  Widget _buildToolButton(
     BuildContext context, {
     required ToolMode drawingMode,
     required String tooltip,

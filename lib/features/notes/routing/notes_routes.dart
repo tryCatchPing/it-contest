@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../../shared/routing/app_routes.dart';
-import '../pages/note_list_page.dart';
+import '../pages/note_list_screen.dart';
 
 /// 📝 노트 기능 관련 라우트 설정
 ///
@@ -13,7 +13,7 @@ class NotesRoutes {
     GoRoute(
       path: AppRoutes.noteList,
       name: AppRoutes.noteListName,
-      builder: (context, state) => const NoteListPage(),
+      builder: (context, state) => const NoteListScreen(),
     ),
   ];
 }

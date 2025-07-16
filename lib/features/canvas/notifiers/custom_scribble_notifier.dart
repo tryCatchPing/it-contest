@@ -1,6 +1,6 @@
 import 'package:scribble/scribble.dart';
 
-import '../../notes/models/page.dart' as page_model;
+import '../../notes/models/page_model.dart' as page_model;
 import '../mixins/auto_save_mixin.dart';
 import '../mixins/tool_management_mixin.dart';
 import '../models/tool_mode.dart';
@@ -24,5 +24,5 @@ class CustomScribbleNotifier extends ScribbleNotifier
   @override
   ToolMode toolMode;
   @override
-  final page_model.Page? page; // 멀티페이지에서 사용할 Page 객체
+  final page_model.PageModel? page; // 멀티페이지에서 사용할 Page 객체
 }

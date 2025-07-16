@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../notifiers/custom_scribble_notifier.dart';
-import '../widgets/canvas_info.dart';
-import '../widgets/canvas_toolbar.dart';
+import '../../notifiers/custom_scribble_notifier.dart';
+import '../controls/note_editor_pointer_mode.dart';
+import '../controls/note_editor_pressure_toggle.dart';
+import '../controls/note_editor_viewport_info.dart';
+import 'note_editor_drawing_toolbar.dart';
 
-class EditorToolBarSection extends StatelessWidget {
-  const EditorToolBarSection({
+class NoteEditorToolbar extends StatelessWidget {
+  const NoteEditorToolbar({
     required this.notifier,
     required this.canvasWidth,
     required this.canvasHeight,
@@ -37,16 +39,16 @@ class EditorToolBarSection extends StatelessWidget {
               spacing: 16,
               runSpacing: 16,
               children: [
-                CanvasToolbar(notifier: notifier),
+                NoteEditorDrawingToolbar(notifier: notifier),
                 // 필압 토글 컨트롤
                 // TODO(xodnd): notifier 에서 처리하는 것이 좋을 것 같음.
                 // TODO(xodnd): simplify 0 으로 수정 필요
-                PressureToggle(
+                NoteEditorPressureToggle(
                   simulatePressure: simulatePressure,
                   onChanged: onPressureToggleChanged,
                 ),
                 const SizedBox.shrink(),
-                PointerModeSwitcher(notifier: notifier),
+                NoteEditorPointerMode(notifier: notifier),
               ],
             ),
           ),
@@ -54,7 +56,7 @@ class EditorToolBarSection extends StatelessWidget {
           const SizedBox(height: 16),
 
           // 📊 캔버스와 뷰포트 정보를 표시하는 위젯
-          CanvasInfo(
+          NoteEditorViewportInfo(
             canvasWidth: canvasWidth,
             canvasHeight: canvasHeight,
             transformationController: transformationController,

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 /// 색상 버튼 위젯
 ///
 /// 캔버스에서 사용할 색상 버튼을 생성합니다.
-class ColorButton extends StatelessWidget {
-  const ColorButton({
+class NoteEditorColorButton extends StatelessWidget {
+  const NoteEditorColorButton({
     required this.color,
     required this.isActive,
     required this.onPressed,

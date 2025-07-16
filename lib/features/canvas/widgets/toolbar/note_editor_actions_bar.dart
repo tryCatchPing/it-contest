@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../notifiers/custom_scribble_notifier.dart';
-import '../notifiers/scribble_notifier_x.dart';
+import '../../notifiers/custom_scribble_notifier.dart';
+import '../../notifiers/scribble_notifier_x.dart';
 
-class EditorActionsBar extends StatelessWidget {
-  const EditorActionsBar({super.key, required this.notifier});
+class NoteEditorActionsBar extends StatelessWidget {
+  const NoteEditorActionsBar({super.key, required this.notifier});
   final CustomScribbleNotifier notifier;
 
   @override

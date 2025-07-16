@@ -3,10 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../shared/routing/app_routes.dart';
 import '../../../shared/widgets/navigation_card.dart';
-import '../data/notes.dart';
+import '../data/fake_notes.dart';
 
-class NoteListPage extends StatelessWidget {
-  const NoteListPage({super.key});
+class NoteListScreen extends StatelessWidget {
+  const NoteListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,22 +56,23 @@ class NoteListPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       // 노트 카드들
-                      for (var i = 0; i < tmpNotes.length; ++i) ...[
+                      for (var i = 0; i < fakeNotes.length; ++i) ...[
                         NavigationCard(
                           icon: Icons.brush,
-                          title: tmpNotes[i].title,
-                          subtitle: '${tmpNotes[i].pages.length} 페이지',
+                          title: fakeNotes[i].title,
+                          subtitle: '${fakeNotes[i].pages.length} 페이지',
                           color: const Color(0xFF6750A4),
                           onTap: () {
-                            print('📝 노트 편집: ${tmpNotes[i].noteId}');
+                            print('📝 노트 편집: ${fakeNotes[i].noteId}');
                             // 🚀 타입 안전한 네비게이션 사용
                             context.pushNamed(
                               AppRoutes.noteEditName,
-                              pathParameters: {'noteId': tmpNotes[i].noteId},
+                              pathParameters: {'noteId': fakeNotes[i].noteId},
                             );
                           },
                         ),
-                        if (i < tmpNotes.length - 1) const SizedBox(height: 16),
+                        if (i < fakeNotes.length - 1)
+                          const SizedBox(height: 16),
                       ],
                     ],
                   ),
