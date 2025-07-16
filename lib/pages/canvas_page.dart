@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../features/canvas/models/custom_scribble_notifier.dart';
-import '../features/canvas/models/scribble_notifier_x.dart';
 import '../features/canvas/models/tool_mode.dart';
+import '../features/canvas/notifiers/custom_scribble_notifier.dart';
+import '../features/canvas/notifiers/scribble_notifier_x.dart';
 import '../features/canvas/widgets/background_placeholder.dart';
 import '../features/canvas/widgets/canvas_info.dart';
 import '../features/canvas/widgets/canvas_toolbar.dart';

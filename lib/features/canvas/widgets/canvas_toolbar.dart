@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
 import '../models/canvas_color.dart';
-import '../models/custom_scribble_notifier.dart';
 import '../models/tool_mode.dart';
+import '../notifiers/custom_scribble_notifier.dart';
 import 'color_button.dart';
 import 'drawing_mode_toolbar.dart';
 
