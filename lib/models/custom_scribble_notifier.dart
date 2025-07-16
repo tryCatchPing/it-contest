@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
+import '../features/canvas/models/tool_mode.dart';
 import 'page.dart' as page_model;
-import 'tool_mode.dart';
 
 class CustomScribbleNotifier extends ScribbleNotifier {
   CustomScribbleNotifier({
