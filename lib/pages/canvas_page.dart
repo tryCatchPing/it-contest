@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
 import '../features/canvas/models/custom_scribble_notifier.dart';
+import '../features/canvas/models/scribble_notifier_x.dart';
 import '../features/canvas/models/tool_mode.dart';
 import '../features/canvas/widgets/background_placeholder.dart';
-import '../features/canvas/widgets/canvas_actions.dart';
 import '../features/canvas/widgets/canvas_info.dart';
 import '../features/canvas/widgets/canvas_toolbar.dart';
 import '../models/note.dart';
@@ -268,12 +268,12 @@ class _CanvasPageState extends State<CanvasPage> {
       IconButton(
         icon: const Icon(Icons.image),
         tooltip: 'Show PNG Image',
-        onPressed: () => CanvasActions.showImage(context, notifier),
+        onPressed: () => notifier.showImage(context),
       ),
       IconButton(
         icon: const Icon(Icons.data_object),
         tooltip: 'Show JSON',
-        onPressed: () => CanvasActions.showJson(context, notifier),
+        onPressed: () => notifier.showJson(context),
       ),
       IconButton(
         icon: const Icon(Icons.save),
