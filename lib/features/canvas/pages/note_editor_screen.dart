@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../../notes/models/note.dart';
+import '../../notes/models/note_model.dart';
 import '../models/tool_mode.dart';
 import '../notifiers/custom_scribble_notifier.dart';
-import '../widgets/background_placeholder.dart';
-import '../widgets/editor_actions_bar.dart';
-import '../widgets/editor_tool_bar_section.dart';
+import '../widgets/note_editor_background_placeholder.dart';
+import '../widgets/toolbar/note_editor_actions_bar.dart';
+import '../widgets/toolbar/note_editor_toolbar.dart';
 
-class CanvasPage extends StatefulWidget {
-  const CanvasPage({
+class NoteEditorScreen extends StatefulWidget {
+  const NoteEditorScreen({
     super.key,
     required this.note,
   });
 
-  final Note note;
+  final NoteModel note;
 
   @override
-  State<CanvasPage> createState() => _CanvasPageState();
+  State<NoteEditorScreen> createState() => _NoteEditorScreenState();
 }
 
-class _CanvasPageState extends State<CanvasPage> {
+class _NoteEditorScreenState extends State<NoteEditorScreen> {
   // 캔버스 크기 상수
   static const double _canvasWidth = 2000.0;
   static const double _canvasHeight = 2000.0;
@@ -115,7 +115,7 @@ class _CanvasPageState extends State<CanvasPage> {
           '${widget.note.title} - Page ${_currentPageIndex + 1}/$totalPages',
         ),
         actions: [
-          EditorActionsBar(notifier: notifier),
+          NoteEditorActionsBar(notifier: notifier),
         ],
       ),
       body: Padding(
@@ -166,7 +166,7 @@ class _CanvasPageState extends State<CanvasPage> {
                                 child: Stack(
                                   children: [
                                     // 배경 레이어 (PDF 이미지)
-                                    const BackgroundPlaceholder(
+                                    const NoteEditorBackgroundPlaceholder(
                                       width: _canvasWidth,
                                       height: _canvasHeight,
                                     ),
@@ -190,7 +190,7 @@ class _CanvasPageState extends State<CanvasPage> {
                 },
               ),
             ),
-            EditorToolBarSection(
+            NoteEditorToolbar(
               notifier: notifier,
               canvasWidth: _canvasWidth,
               canvasHeight: _canvasHeight,

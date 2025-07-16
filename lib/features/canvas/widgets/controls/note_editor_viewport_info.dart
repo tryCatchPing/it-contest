@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// 캔버스와 뷰포트 정보를 표시하는 위젯
-class CanvasInfo extends StatelessWidget {
-  const CanvasInfo({
+class NoteEditorViewportInfo extends StatelessWidget {
+  const NoteEditorViewportInfo({
     required this.canvasWidth,
     required this.canvasHeight,
     required this.transformationController,

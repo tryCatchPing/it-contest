@@ -1,12 +1,12 @@
-import 'page.dart';
+import 'page_model.dart';
 
-class Note {
+class NoteModel {
   final String noteId;
   final String title;
   // 일단은 페이지 객체로
-  List<Page> pages;
+  List<PageModel> pages;
 
-  Note({
+  NoteModel({
     required this.noteId,
     required this.title,
     required this.pages,
