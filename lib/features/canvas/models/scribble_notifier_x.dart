@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-class CanvasActions {
-  static void showImage(BuildContext context, ScribbleNotifier notifier) async {
-    final image = notifier.renderImage();
+extension ScribbleNotifierX on ScribbleNotifier {
+  void showImage(BuildContext context) async {
+    final image = renderImage();
     if (!context.mounted) return;
 
     showDialog<void>(
@@ -30,14 +30,14 @@ class CanvasActions {
     );
   }
 
-  static void showJson(BuildContext context, ScribbleNotifier notifier) {
+  void showJson(BuildContext context) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Sketch as JSON'),
         content: SizedBox.expand(
           child: SelectableText(
-            jsonEncode(notifier.currentSketch.toJson()),
+            jsonEncode(currentSketch.toJson()),
             autofocus: true,
           ),
         ),
