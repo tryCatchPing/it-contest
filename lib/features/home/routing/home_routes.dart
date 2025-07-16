@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../shared/routing/app_routes.dart';
 import '../../canvas/pages/pdf_canvas_page.dart';
-import '../pages/home_page.dart';
+import '../pages/home_screen.dart';
 
 /// 🏠 홈 기능 관련 라우트 설정
 ///
@@ -17,7 +17,7 @@ class HomeRoutes {
     GoRoute(
       path: AppRoutes.home,
       name: AppRoutes.homeName,
-      builder: (context, state) => const HomePage(),
+      builder: (context, state) => const HomeScreen(),
     ),
     // PDF 캔버스 페이지 (홈에서 PDF 파일 선택 기능이 있어서 여기서 관리)
     GoRoute(

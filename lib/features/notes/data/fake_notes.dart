@@ -1,5 +1,5 @@
 import '../models/note_model.dart';
-import '../models/page_model.dart';
+import '../models/note_page_model.dart';
 
 final List<NoteModel> fakeNotes = [
   fakeNote,
@@ -9,7 +9,7 @@ final fakeNote = NoteModel(
   noteId: 'note1',
   title: 'Note 1',
   pages: [
-    PageModel(
+    NotePageModel(
       // 일단 임시로
       noteId: 'note1',
       pageId: 'page1',
@@ -18,13 +18,13 @@ final fakeNote = NoteModel(
 {"lines":[{"points":[{"x":310.58984375,"y":333.62890625,"pressure":0.5},{"x":318.1171875,"y":331.9296875,"pressure":0.5},{"x":330.41796875,"y":329.390625,"pressure":0.5},{"x":346.5234375,"y":326.72265625,"pressure":0.5},{"x":365.515625,"y":323.73828125,"pressure":0.5},{"x":379.6171875,"y":321.625,"pressure":0.5},{"x":388.75,"y":320.46484375,"pressure":0.5},{"x":392.80859375,"y":320.2578125,"pressure":0.5},{"x":395.1796875,"y":320.234375,"pressure":0.5}],"color":4279900698,"width":3},{"points":[{"x":334.55078125,"y":282.12109375,"pressure":0.5},{"x":334.55078125,"y":284.4140625,"pressure":0.5},{"x":334.71484375,"y":288.05078125,"pressure":0.5},{"x":336.39453125,"y":301.2578125,"pressure":0.5},{"x":339.7109375,"y":323.3125,"pressure":0.5},{"x":343.5390625,"y":342.8125,"pressure":0.5},{"x":347.94140625,"y":360.578125,"pressure":0.5},{"x":352.703125,"y":376.14453125,"pressure":0.5},{"x":356.51953125,"y":387.55859375,"pressure":0.5},{"x":359.53515625,"y":395.61328125,"pressure":0.5},{"x":362.2109375,"y":401.45703125,"pressure":0.5},{"x":363.77734375,"y":404.5546875,"pressure":0.5},{"x":365.1171875,"y":406.8671875,"pressure":0.5},{"x":368.44921875,"y":406.50390625,"pressure":0.5},{"x":371.6796875,"y":405.2109375,"pressure":0.5},{"x":375.578125,"y":403.015625,"pressure":0.5},{"x":379.78515625,"y":399.9921875,"pressure":0.5},{"x":382.625,"y":397.74609375,"pressure":0.5},{"x":384.32421875,"y":396.21484375,"pressure":0.5},{"x":386.35546875,"y":394.6171875,"pressure":0.5},{"x":387.984375,"y":393.0546875,"pressure":0.5},{"x":391.23046875,"y":390.3671875,"pressure":0.5},{"x":393.2578125,"y":389.00390625,"pressure":0.5},{"x":395.60546875,"y":387.70703125,"pressure":0.5},{"x":398.00390625,"y":386.66796875,"pressure":0.5}],"color":4279900698,"width":3}]}
 ''',
     ),
-    PageModel(
+    NotePageModel(
       noteId: 'note1',
       pageId: 'page2',
       pageNumber: 2,
       jsonData: '{"lines":[]}',
     ),
-    PageModel(
+    NotePageModel(
       noteId: 'note1',
       pageId: 'page3',
       pageNumber: 3,

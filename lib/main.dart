@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'features/canvas/routing/canvas_routers.dart';
+import 'features/canvas/routing/canvas_routes.dart';
 import 'features/home/routing/home_routes.dart';
 import 'features/notes/routing/notes_routes.dart';
 
@@ -14,7 +14,7 @@ final _router = GoRouter(
     // 노트 관련 라우트 (노트 목록)
     ...NotesRoutes.routes,
     // 캔버스 관련 라우트 (노트 편집)
-    ...CanvasRouters.routes,
+    ...CanvasRoutes.routes,
   ],
   debugLogDiagnostics: true,
 );

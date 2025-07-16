@@ -7,7 +7,7 @@ import '../pages/note_editor_screen.dart';
 /// 🎨 캔버스 기능 관련 라우트 설정
 ///
 /// 노트 편집 (캔버스) 관련 라우트를 여기서 관리합니다.
-class CanvasRouters {
+class CanvasRoutes {
   static List<RouteBase> routes = [
     // 특정 노트 편집 페이지 (/notes/:noteId/edit)
     GoRoute(

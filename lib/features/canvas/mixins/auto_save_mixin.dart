@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../../notes/models/page_model.dart' as page_model;
+import '../../notes/models/note_page_model.dart' as page_model;
 
 /// 자동저장 기능을 제공하는 Mixin
 mixin AutoSaveMixin on ScribbleNotifier {
-  page_model.PageModel? get page;
+  page_model.NotePageModel? get page;
 
   /// 자동저장 구현
   @override

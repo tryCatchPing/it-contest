@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 /// 캔버스 임시 배경 표시 위젯
 ///
 /// 캔버스의 배경을 표시합니다.
-class NoteEditorBackgroundPlaceholder extends StatelessWidget {
-  const NoteEditorBackgroundPlaceholder({
+class CanvasBackgroundPlaceholder extends StatelessWidget {
+  const CanvasBackgroundPlaceholder({
     required this.width,
     required this.height,
     super.key,
