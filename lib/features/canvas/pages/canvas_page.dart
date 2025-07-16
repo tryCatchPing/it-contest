@@ -4,10 +4,10 @@ import 'package:scribble/scribble.dart';
 import '../../notes/models/note.dart';
 import '../models/tool_mode.dart';
 import '../notifiers/custom_scribble_notifier.dart';
-import '../notifiers/scribble_notifier_x.dart';
 import '../widgets/background_placeholder.dart';
 import '../widgets/canvas_info.dart';
 import '../widgets/canvas_toolbar.dart';
+import '../widgets/editor_actions_bar.dart';
 
 class CanvasPage extends StatefulWidget {
   const CanvasPage({
@@ -115,7 +115,9 @@ class _CanvasPageState extends State<CanvasPage> {
         title: Text(
           '${widget.note.title} - Page ${_currentPageIndex + 1}/$totalPages',
         ),
-        actions: _buildActions(context),
+        actions: [
+          EditorActionsBar(notifier: notifier),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 64),
@@ -238,48 +240,5 @@ class _CanvasPageState extends State<CanvasPage> {
         ),
       ),
     );
-  }
-
-  List<Widget> _buildActions(BuildContext context) {
-    return [
-      ValueListenableBuilder(
-        valueListenable: notifier,
-        builder: (context, value, child) => IconButton(
-          icon: child as Icon,
-          tooltip: 'Undo',
-          onPressed: notifier.canUndo ? notifier.undo : null,
-        ),
-        child: const Icon(Icons.undo),
-      ),
-      ValueListenableBuilder(
-        valueListenable: notifier,
-        builder: (context, value, child) => IconButton(
-          icon: child as Icon,
-          tooltip: 'Redo',
-          onPressed: notifier.canRedo ? notifier.redo : null,
-        ),
-        child: const Icon(Icons.redo),
-      ),
-      IconButton(
-        icon: const Icon(Icons.clear),
-        tooltip: 'Clear',
-        onPressed: notifier.clear,
-      ),
-      IconButton(
-        icon: const Icon(Icons.image),
-        tooltip: 'Show PNG Image',
-        onPressed: () => notifier.showImage(context),
-      ),
-      IconButton(
-        icon: const Icon(Icons.data_object),
-        tooltip: 'Show JSON',
-        onPressed: () => notifier.showJson(context),
-      ),
-      IconButton(
-        icon: const Icon(Icons.save),
-        tooltip: 'Save',
-        onPressed: () => notifier.saveSketch(),
-      ),
-    ];
   }
 }
