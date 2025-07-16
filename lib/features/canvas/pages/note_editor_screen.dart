@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:scribble/scribble.dart';
 
 import '../../notes/models/note_model.dart';
+import '../constants/note_editor_constant.dart';
 import '../models/tool_mode.dart';
 import '../notifiers/custom_scribble_notifier.dart';
-import '../widgets/canvas_background_placeholder.dart';
+import '../widgets/note_editor_canvas.dart';
 import '../widgets/toolbar/note_editor_actions_bar.dart';
-import '../widgets/toolbar/note_editor_toolbar.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   const NoteEditorScreen({
@@ -21,11 +20,7 @@ class NoteEditorScreen extends StatefulWidget {
 }
 
 class _NoteEditorScreenState extends State<NoteEditorScreen> {
-  // 캔버스 크기 상수
-  static const double _canvasWidth = 2000.0;
-  static const double _canvasHeight = 2000.0;
-  static const double _canvasScale = 1.5; // 캔버스 주변 여백 배율
-  static const int _maxHistoryLength = 100;
+  static const int _maxHistoryLength = NoteEditorConstants.maxHistoryLength;
 
   /// CustomScribbleNotifier: 그리기 상태를 관리하는 핵심 컨트롤러
   ///
@@ -106,6 +101,22 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     super.dispose();
   }
 
+  /// 페이지 변경 콜백
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentPageIndex = index;
+      // 현재 페이지의 notifier로 변경
+      notifier = _scribbleNotifiers[index]!;
+    });
+  }
+
+  /// 필압 시뮬레이션 토글 콜백
+  void _onPressureToggleChanged(bool value) {
+    setState(() {
+      _simulatePressure = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,89 +129,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           NoteEditorActionsBar(notifier: notifier),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 64),
-        child: Column(
-          children: [
-            // 캔버스 영역 - 남은 공간을 자동으로 모두 채움
-            Expanded(
-              // 기존 캔버스 영역을 페이지 뷰로 wrapping
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: totalPages,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPageIndex = index;
-                    // 현재 페이지의 notifier로 변경
-                    notifier = _scribbleNotifiers[index]!;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  final currentNotifier = _scribbleNotifiers[index]!;
-
-                  return Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Card(
-                      elevation: 8,
-                      shadowColor: Colors.black26,
-                      surfaceTintColor: Colors.white,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        // TODO(xodnd): 캔버스 기본 로딩 시 중앙 정렬 필요
-                        child: InteractiveViewer(
-                          transformationController: transformationController,
-                          minScale: 0.3,
-                          maxScale: 3.0,
-                          constrained: false,
-                          panEnabled: true, // 패닝 활성화
-                          scaleEnabled: true, // 스케일 활성화
-                          child: SizedBox(
-                            // 캔버스 주변에 여백 공간 제공 (축소 시 필요)
-                            width: _canvasWidth * _canvasScale,
-                            height: _canvasHeight * _canvasScale,
-                            child: Center(
-                              child: SizedBox(
-                                // 실제 캔버스: PDF/그리기 영역
-                                width: _canvasWidth,
-                                height: _canvasHeight,
-                                child: Stack(
-                                  children: [
-                                    // 배경 레이어 (PDF 이미지)
-                                    const CanvasBackgroundPlaceholder(
-                                      width: _canvasWidth,
-                                      height: _canvasHeight,
-                                    ),
-
-                                    // 그리기 레이어 (투명한 캔버스)
-                                    Scribble(
-                                      notifier:
-                                          currentNotifier, // 페이지별 notifier 사용
-                                      drawPen: true,
-                                      simulatePressure: _simulatePressure,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            NoteEditorToolbar(
-              notifier: notifier,
-              canvasWidth: _canvasWidth,
-              canvasHeight: _canvasHeight,
-              transformationController: transformationController,
-              simulatePressure: _simulatePressure,
-              onPressureToggleChanged: (value) =>
-                  setState(() => _simulatePressure = value),
-            ),
-          ],
-        ),
+      body: NoteEditorCanvas(
+        totalPages: totalPages,
+        currentPageIndex: _currentPageIndex,
+        pageController: _pageController,
+        scribbleNotifiers: _scribbleNotifiers,
+        currentNotifier: notifier,
+        transformationController: transformationController,
+        simulatePressure: _simulatePressure,
+        onPageChanged: _onPageChanged,
+        onPressureToggleChanged: _onPressureToggleChanged,
       ),
     );
   }
