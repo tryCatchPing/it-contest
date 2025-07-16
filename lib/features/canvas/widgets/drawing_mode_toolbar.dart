@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
-import '../../features/canvas/models/tool_mode.dart';
-import '../../models/custom_scribble_notifier.dart';
+import '../models/custom_scribble_notifier.dart';
+import '../models/tool_mode.dart';
 
+/// 그리기 모드 툴바
+///
+/// 펜, 지우개, 하이라이터, 링커 모드를 선택할 수 있습니다.
 class DrawingModeToolbar extends StatelessWidget {
   const DrawingModeToolbar({
     required this.notifier,
@@ -40,6 +43,10 @@ class DrawingModeToolbar extends StatelessWidget {
     );
   }
 
+  /// 그리기 모드 버튼 생성
+  ///
+  /// [drawingMode] - 선택할 그리기 모드
+  /// [tooltip] - 버튼에 표시할 텍스트
   Widget _buildDrawingModeButton(
     BuildContext context, {
     required ToolMode drawingMode,
