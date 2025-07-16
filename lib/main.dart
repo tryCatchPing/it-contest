@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'data/notes.dart';
+import 'features/notes/data/notes.dart';
+import 'features/notes/pages/note_list_page.dart';
 import 'pages/canvas_page.dart';
 import 'pages/home_page.dart';
-import 'pages/note_list_page.dart';
 import 'pages/pdf_canvas_page.dart';
 
 void main() => runApp(const MyApp());

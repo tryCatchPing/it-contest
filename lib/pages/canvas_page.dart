@@ -7,7 +7,7 @@ import '../features/canvas/notifiers/scribble_notifier_x.dart';
 import '../features/canvas/widgets/background_placeholder.dart';
 import '../features/canvas/widgets/canvas_info.dart';
 import '../features/canvas/widgets/canvas_toolbar.dart';
-import '../models/note.dart';
+import '../features/notes/models/note.dart';
 
 class CanvasPage extends StatefulWidget {
   const CanvasPage({
