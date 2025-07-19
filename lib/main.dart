@@ -1,33 +1,46 @@
 import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import 'pages/canvas_page.dart';
-import 'pages/home_page.dart';
-import 'pages/note_list_page.dart';
-import 'pages/pdf_canvas_page.dart';
-import 'pages/graph_view_page.dart';
-
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'models/canvas_object.dart';
-import 'models/note.dart';
 import 'models/link.dart' as models; // Link 모델 임포트
+import 'models/note.dart';
+import 'pages/canvas_page.dart';
+import 'pages/graph_view_page.dart';
+import 'pages/home_page.dart';
+import 'pages/note_list_page.dart';
+import 'pages/pdf_canvas_page.dart';
 
 late Isar isar; // 전역 isar 인스턴스 선언
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final dir = await getApplicationDocumentsDirectory();
-  isar = await Isar.open( // isar 인스턴스 초기화
-    [
-      NoteSchema,
-      CanvasObjectSchema,
-      models.MyLinkSchema, // MyLinkSchema 추가
-    ],
-    directory: dir.path,
-  );
+
+  if (kIsWeb) {
+    isar = await Isar.open(
+      [
+        NoteSchema,
+        CanvasObjectSchema,
+        models.MyLinkSchema,
+      ],
+      inspector: true, // 웹에서는 inspector를 활성화하는 것이 좋습니다.
+      directory: 'web_isar_dir', // 웹에서는 더미 디렉토리 제공
+    );
+  } else {
+    final dir = await getApplicationDocumentsDirectory();
+    isar = await Isar.open(
+      [
+        NoteSchema,
+        CanvasObjectSchema,
+        models.MyLinkSchema,
+      ],
+      directory: dir.path,
+    );
+  }
   runApp(const MyApp());
 }
 

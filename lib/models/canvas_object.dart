@@ -2,8 +2,7 @@ import 'dart:math';
 
 import 'package:isar/isar.dart';
 import 'package:scribble/scribble.dart';
-import 'dart:convert';
-import 'package:flutter/material.dart'; // Color 클래스를 위해 추가
+
 
 part 'canvas_object.g.dart';
 

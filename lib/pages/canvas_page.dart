@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:scribble/scribble.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:isar/isar.dart';
+import 'package:scribble/scribble.dart';
 
+import '../main.dart' as app_main; // isar 인스턴스 접근을 위해 main.dart를 app_main으로 임포트
 import '../models/canvas_object.dart';
 import '../models/custom_scribble_notifier.dart';
+import '../models/link.dart'; // Link 모델 임포트
+import '../models/note.dart'; // Note 모델 임포트
 import '../models/tool_mode.dart';
 import '../widgets/canvas/canvas_actions.dart';
 import '../widgets/canvas/canvas_background.dart';
 import '../widgets/canvas/canvas_info.dart';
 import '../widgets/canvas/canvas_toolbar.dart';
-import '../main.dart' as app_main; // isar 인스턴스 접근을 위해 main.dart를 app_main으로 임포트
-import '../models/note.dart'; // Note 모델 임포트
-import '../models/link.dart'; // Link 모델 임포트
 import 'note_list_page.dart';
-import '../models/link.dart' as models; // Link 모델 임포트
 
 class CanvasPage extends StatefulWidget {
   const CanvasPage({
@@ -102,11 +102,9 @@ class _CanvasPageState extends State<CanvasPage> {
   // 캔버스 탭 처리 (하이라이터 클릭 감지)
   void _handleCanvasTap(Offset localPosition, int noteId) async {
     if (_isDrawingMode) {
-      print('현재 필기 모드이므로 탭 감지 무시.');
-      return; // 필기 모드에서는 탭 감지 안함
+      // 필기 모드에서는 탭 감지 안함
+      return;
     }
-
-    print('캔버스 탭 감지: $localPosition (노트 ID: $noteId)');
 
     // 현재 노트의 링크 하이라이터 획들을 조회합니다.
     final linkHighlights = await app_main.isar.canvasObjects
@@ -115,11 +113,8 @@ class _CanvasPageState extends State<CanvasPage> {
         .isLinkHighlightEqualTo(true)
         .findAll();
 
-    print('조회된 링크 하이라이터 수: ${linkHighlights.length}');
-
     CanvasObject? clickedHighlight;
     for (final highlight in linkHighlights) {
-      print('하이라이터 ID: ${highlight.id}, Bounds: (${highlight.minX}, ${highlight.minY}) - (${highlight.maxX}, ${highlight.maxY})');
       if (highlight.minX != null &&
           highlight.minY != null &&
           highlight.maxX != null &&
@@ -132,14 +127,12 @@ class _CanvasPageState extends State<CanvasPage> {
             localPosition.dy >= (highlight.minY! - padding) &&
             localPosition.dy <= (highlight.maxY! + padding)) {
           clickedHighlight = highlight;
-          print('히트 테스트 성공!');
           break;
         }
       }
     }
 
     if (clickedHighlight != null) {
-      print('링크 하이라이터 클릭됨: ${clickedHighlight.id}');
       // 클릭된 하이라이터가 이미 링크와 연결되어 있는지 확인
       final existingLink = await app_main.isar.myLinks
           .filter()
@@ -153,8 +146,6 @@ class _CanvasPageState extends State<CanvasPage> {
         // 링크가 없는 경우 (새 링크 생성 또는 기존 링크 찾기)
         _showLinkOptionsDialog(clickedHighlight);
       }
-    } else {
-      print('클릭된 링크 하이라이터 없음.');
     }
   }
 
@@ -171,8 +162,8 @@ class _CanvasPageState extends State<CanvasPage> {
               Navigator.pop(context);
               // 링크 이동: 연결된 노트로 이동
               await link.targetNote.load();
-              if (link.targetNote.value != null) {
-                Navigator.push(
+              if (link.targetNote.value != null && mounted) {
+                Navigator.push<void>(
                   context,
                   MaterialPageRoute(
                     builder: (context) => CanvasPage(
@@ -265,7 +256,6 @@ class _CanvasPageState extends State<CanvasPage> {
     // 1. 현재 노트(Source) 가져오기
     final sourceNote = await isar.collection<Note>().get(widget.canvasIndex);
     if (sourceNote == null) {
-      print('오류: 현재 노트를 찾을 수 없습니다.');
       return;
     }
 
@@ -291,15 +281,13 @@ class _CanvasPageState extends State<CanvasPage> {
       await newLink.sourceNote.save();
       await newLink.targetNote.save();
       await newLink.sourceHighlight.save();
-
-      // 5. 하이라이트 객체에 링크 정보 업데이트 (선택적)
-      // IsarLink를 사용하면 highlight.linkId 같은 필드는 더 이상 필요 없습니다。
-      // 대신 Backlink를 통해 highlight에서 Link를 찾을 수 있습니다。
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("'$noteTitle' 노트와 링크가 생성되었습니다.")),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("'$noteTitle' 노트와 링크가 생성되었습니다.")),
+      );
+    }
 
     // 새 노트 생성 완료 후 콜백 호출
     widget.onNoteCreated?.call();
@@ -335,8 +323,8 @@ class _CanvasPageState extends State<CanvasPage> {
                     onTap: () async {
                       // 연결된 노트로 이동
                       await link.sourceNote.load(); // sourceNote 로드
-                      if (link.sourceNote.value != null) {
-                        Navigator.push(
+                      if (link.sourceNote.value != null && mounted) {
+                        Navigator.push<void>(
                           context,
                           MaterialPageRoute(
                             builder: (context) => CanvasPage(
@@ -360,66 +348,46 @@ class _CanvasPageState extends State<CanvasPage> {
   // 링크 대상 노트를 검색하고 연결하는 다이얼로그
   void _showLinkSearchDialog(CanvasObject highlight) {
     final textController = TextEditingController();
-    List<Note> searchResults = [];
-
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('기존 노트에 연결'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: textController,
-                    decoration: const InputDecoration(hintText: '노트 제목 검색'),
-                    onChanged: (query) async {
-                      if (query.isNotEmpty) {
-                        final isar = app_main.isar;
-                        final notes = await isar.collection<Note>()
-                            .filter()
-                            .titleContains(query, caseSensitive: false)
-                            .findAll();
-                        setState(() {
-                          searchResults = notes;
-                        });
-                      } else {
-                        setState(() {
-                          searchResults = [];
-                        });
-                      }
-                    },
-                  ),
-                  if (searchResults.isNotEmpty)
-                    SizedBox(
-                      height: 200, // 자동 완성 목록의 최대 높이
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: searchResults.length,
-                        itemBuilder: (context, index) {
-                          final note = searchResults[index];
-                          return ListTile(
-                            title: Text(note.title),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _createLinkToExistingNote(highlight, note);
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                ],
+        return AlertDialog(
+          title: const Text('기존 노트에 연결'),
+          content: TypeAheadField<Note>(
+            textFieldConfiguration: TextFieldConfiguration(
+              controller: textController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: '노트 제목 검색',
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('취소'),
-                ),
-              ],
-            );
-          },
+            ),
+            suggestionsCallback: (pattern) async {
+              if (pattern.isEmpty) {
+                return const Iterable<Note>.empty();
+              }
+              final notes = await app_main.isar.collection<Note>()
+                  .filter()
+                  .titleContains(pattern, caseSensitive: false)
+                  .findAll();
+              return notes;
+            },
+            itemBuilder: (context, suggestion) {
+              return ListTile(
+                title: Text(suggestion.title),
+              );
+            },
+            onSuggestionSelected: (suggestion) {
+              Navigator.pop(context); // 다이얼로그 닫기
+              _createLinkToExistingNote(highlight, suggestion);
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+          ],
         );
       },
     );
@@ -432,7 +400,6 @@ class _CanvasPageState extends State<CanvasPage> {
     // 1. 현재 노트(Source) 가져오기
     final sourceNote = await isar.collection<Note>().get(widget.canvasIndex);
     if (sourceNote == null) {
-      print('오류: 현재 노트를 찾을 수 없습니다.');
       return;
     }
 
@@ -453,9 +420,11 @@ class _CanvasPageState extends State<CanvasPage> {
       await newLink.sourceHighlight.save();
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("'${targetNote.title}' 노트에 링크가 연결되었습니다.")),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("'${targetNote.title}' 노트에 링크가 연결되었습니다.")),
+      );
+    }
   }
 
   List<Widget> _buildActions(BuildContext context) {
@@ -538,7 +507,7 @@ class _CanvasPageState extends State<CanvasPage> {
                         width: canvasWidth * 1.5,
                         height: canvasHeight * 1.5,
                         child: Center(
-                          child: Container(
+                          child: SizedBox(
                             // 실제 캔버스: PDF/그리기 영역
                             width: canvasWidth,
                             height: canvasHeight,

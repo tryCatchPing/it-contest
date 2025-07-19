@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import '../main.dart' as app_main;
 import '../models/note.dart';
-import '../models/link.dart';
 import 'canvas_page.dart';
 
 class GraphViewPage extends StatefulWidget {
@@ -73,7 +72,7 @@ class _GraphViewPageState extends State<GraphViewPage> {
                                         if (link.targetNote.value != null) {
                                           Navigator.push(
                                             context,
-                                            MaterialPageRoute(
+                                            MaterialPageRoute<void>(
                                               builder: (context) => CanvasPage(
                                                 noteTitle: link.targetNote.value!.title,
                                                 canvasIndex: link.targetNote.value!.id,
@@ -85,7 +84,7 @@ class _GraphViewPageState extends State<GraphViewPage> {
                                     );
                                   },
                                 );
-                              }).toList(),
+                              }),
                             ],
                           );
                         },
@@ -117,7 +116,7 @@ class _GraphViewPageState extends State<GraphViewPage> {
                                         if (link.sourceNote.value != null) {
                                           Navigator.push(
                                             context,
-                                            MaterialPageRoute(
+                                            MaterialPageRoute<void>(
                                               builder: (context) => CanvasPage(
                                                 noteTitle: link.sourceNote.value!.title,
                                                 canvasIndex: link.sourceNote.value!.id,
@@ -129,7 +128,7 @@ class _GraphViewPageState extends State<GraphViewPage> {
                                     );
                                   },
                                 );
-                              }).toList(),
+                              }),
                             ],
                           );
                         },

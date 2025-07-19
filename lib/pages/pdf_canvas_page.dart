@@ -1,20 +1,18 @@
-
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:isar/isar.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:scribble/scribble.dart';
-import 'package:isar/isar.dart';
 
 import '../main.dart' as app_main; // isar 인스턴스 접근을 위해 main.dart를 app_main으로 임포트
 import '../models/canvas_object.dart';
 import '../models/custom_scribble_notifier.dart'; // CustomScribbleNotifier 임포트
-import '../models/tool_mode.dart'; // ToolMode 임포트
-import '../models/link.dart' as models;
-import 'note_list_page.dart';
-import '../models/note.dart';
 import '../models/link.dart';
+import '../models/note.dart';
+import '../models/tool_mode.dart'; // ToolMode 임포트
 
 class PdfCanvasPage extends StatefulWidget {
   const PdfCanvasPage({this.filePath, this.fileBytes, super.key})
@@ -43,23 +41,18 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
   }
 
   Future<void> _loadPdf() async {
-    print('PDF 로딩 시작...');
     try {
       if (kIsWeb && widget.fileBytes != null) {
-        print('웹 환경에서 bytes로 PDF를 엽니다.');
         _pdfDocument = await PdfDocument.openData(widget.fileBytes!);
       } else if (widget.filePath != null) {
-        print('파일 경로로 PDF를 엽니다: ${widget.filePath}');
         _pdfDocument = await PdfDocument.openFile(widget.filePath!);
       } else {
         throw Exception('PDF를 열 수 있는 파일 경로 또는 데이터가 없습니다.');
       }
 
       _pageCount = _pdfDocument!.pagesCount;
-      print('PDF 로드 성공. 총 페이지 수: $_pageCount');
 
       if (_pageCount == 0) {
-        print('경고: PDF에 페이지가 없습니다.');
         setState(() {
           _isLoading = false;
         });
@@ -67,7 +60,6 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
       }
 
       for (int i = 1; i <= _pageCount; i++) {
-        print('페이지 $i 렌더링 시작...');
         final page = await _pdfDocument!.getPage(i);
         final pageImage = await page.render(
           width: page.width,
@@ -76,9 +68,6 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
         );
         if (pageImage != null) {
           _pageImages.add(pageImage.bytes);
-          print('페이지 $i 이미지 바이트 크기: ${pageImage.bytes.length} bytes');
-        } else {
-          print('페이지 $i 이미지 렌더링 실패.');
         }
         await page.close();
 
@@ -91,9 +80,7 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
         _scribbleNotifiers[i]!.setStrokeWidth(3);
         _scribbleNotifiers[i]!.setColor(Colors.black);
       }
-      print('모든 페이지 렌더링 완료.');
     } catch (e) {
-      print('PDF 로딩 중 에러 발생: $e');
       setState(() {
         _isLoading = false;
       });
@@ -116,11 +103,8 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
   // 캔버스 탭 처리 (하이라이터 클릭 감지)
   void _handleCanvasTap(Offset localPosition, int pageNumber) async {
     if (_isDrawingMode) {
-      print('현재 필기 모드이므로 탭 감지 무시.');
       return; // 필기 모드에서는 탭 감지 안함
     }
-
-    print('캔버스 탭 감지: $localPosition (페이지: $pageNumber)');
 
     // 현재 페이지의 링크 하이라이터 획들을 조회합니다.
     final linkHighlights = await app_main.isar.canvasObjects
@@ -129,11 +113,8 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
         .isLinkHighlightEqualTo(true)
         .findAll();
 
-    print('조회된 링크 하이라이터 수: ${linkHighlights.length}');
-
     CanvasObject? clickedHighlight;
     for (final highlight in linkHighlights) {
-      print('하이라이터 ID: ${highlight.id}, Bounds: (${highlight.minX}, ${highlight.minY}) - (${highlight.maxX}, ${highlight.maxY})');
       if (highlight.minX != null &&
           highlight.minY != null &&
           highlight.maxX != null &&
@@ -146,18 +127,13 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
             localPosition.dy >= (highlight.minY! - padding) &&
             localPosition.dy <= (highlight.maxY! + padding)) {
           clickedHighlight = highlight;
-          print('히트 테스트 성공!');
           break;
         }
       }
     }
 
     if (clickedHighlight != null) {
-      print('링크 하이라이터 클릭됨: ${clickedHighlight.id}');
-      // TODO: 클릭된 하이라이터에 대한 UI (링크 찾기/생성 팝업) 표시
       _showLinkCreationDialog(clickedHighlight);
-    } else {
-      print('클릭된 링크 하이라이터 없음.');
     }
   }
 
@@ -199,7 +175,6 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
     // 1. 현재 노트(Source) 가져오기
     final sourceNote = await isar.collection<Note>().get(_currentPage + 1);
     if (sourceNote == null) {
-      print('오류: 현재 노트를 찾을 수 없습니다.');
       return;
     }
 
@@ -212,11 +187,11 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
       await isar.collection<Note>().put(newNote);
 
       // 3. 새로운 링크 생성
-      final newLink = models.MyLink()
+      final newLink = MyLink()
         ..name = noteTitle
         ..creationDate = DateTime.now();
       
-      await isar.collection<models.MyLink>().put(newLink);
+      await isar.collection<MyLink>().put(newLink);
 
       // 4. 관계 설정
       newLink.sourceNote.value = sourceNote;
@@ -225,15 +200,13 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
       await newLink.sourceNote.save();
       await newLink.targetNote.save();
       await newLink.sourceHighlight.save();
-
-      // 5. 하이라이트 객체에 링크 정보 업데이트 (선택적)
-      // IsarLink를 사용하면 highlight.linkId 같은 필드는 더 이상 필요 없습니다。
-      // 대신 Backlink를 통해 highlight에서 Link를 찾을 수 있습니다。
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("'$noteTitle' 노트와 링크가 생성되었습니다.")),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("'$noteTitle' 노트와 링크가 생성되었습니다.")),
+      );
+    }
   }
 
   @override
@@ -512,18 +485,73 @@ class _PdfCanvasPageState extends State<PdfCanvasPage> {
 
   // 링크 대상 노트를 검색하고 연결하는 다이얼로그
   void _showLinkSearchDialog() {
-    // 이 다이얼로그는 특정 하이라이트와 연결되지 않고, 사용자가 직접 노트를 검색해서 연결을 시작합니다.
-    // 실제 앱에서는 어떤 하이라이트에 연결할지 선택하는 UI가 추가로 필요할 수 있습니다.
-    showDialog(
+    final textController = TextEditingController();
+    showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('기존 노트에 연결'),
-          content: Text('이 기능은 아직 구현 중입니다. 먼저 하이라이트를 그리고, 해당 하이라이트를 클릭하여 새 링크를 생성해주세요.'),
+          content: TypeAheadField<Note>(
+            textFieldConfiguration: TextFieldConfiguration(
+              controller: textController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: '노트 제목 검색',
+              ),
+            ),
+            suggestionsCallback: (pattern) async {
+              if (pattern.isEmpty) {
+                return const Iterable<Note>.empty();
+              }
+              final notes = await app_main.isar.collection<Note>()
+                  .filter()
+                  .titleContains(pattern, caseSensitive: false)
+                  .findAll();
+              return notes;
+            },
+            itemBuilder: (context, suggestion) {
+              return ListTile(
+                title: Text(suggestion.title),
+              );
+            },
+            onSuggestionSelected: (suggestion) async {
+              Navigator.pop(context); // 다이얼로그 닫기
+              // 선택된 노트와 현재 노트 간의 링크 생성 로직
+              final currentNote = await app_main.isar.collection<Note>().get(_currentPage + 1);
+              if (currentNote == null) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('오류: 현재 노트를 찾을 수 없습니다.')),
+                  );
+                }
+                return;
+              }
+
+              await app_main.isar.writeTxn(() async {
+                final newLink = MyLink()
+                  ..name = '${currentNote.title} -> ${suggestion.title}'
+                  ..creationDate = DateTime.now();
+                await app_main.isar.collection<MyLink>().put(newLink);
+
+                newLink.sourceNote.value = currentNote;
+                newLink.targetNote.value = suggestion;
+                // sourceHighlight는 이 경우 없으므로 설정하지 않음
+                await newLink.sourceNote.save();
+                await newLink.targetNote.save();
+              });
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("'${currentNote.title}'와 '${suggestion.title}' 노트가 연결되었습니다.")),
+                );
+              }
+            },
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('확인'),
+              child: const Text('취소'),
             ),
           ],
         );

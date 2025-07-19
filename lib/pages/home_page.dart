@@ -1,7 +1,7 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
 
 /// 🏠 테스트용 홈페이지
 ///
@@ -46,7 +46,7 @@ class HomePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -93,26 +93,13 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // 🎨 1. Canvas 페이지 버튼
-                //
-                // 💡 동작 설명:
-                // - 사용자가 이 카드를 탭하면 onTap 콜백이 실행됨
-                // - context.push('/canvas')가 호출됨 (go_router 사용)
-                // - main.dart의 routes에서 '/canvas' 경로를 찾음
-                // - CanvasPage() 위젯이 생성되어 화면에 표시됨
-                // - 새 페이지가 현재 페이지(HomePage) 위에 스택처럼 쌓임
-                HomePage.buildNavigationCard(
+                buildNavigationCard(
                   context: context,
                   icon: Icons.note_alt,
                   title: '노트 목록',
                   subtitle: '저장된 스케치 파일들을 확인하고 편집하세요',
                   color: const Color(0xFF4CAF50),
                   onTap: () {
-                    // 🚀 go_router 네비게이션 동작:
-                    // 1. '/canvas' 라우트로 이동 요청
-                    // 2. main.dart의 GoRouter에서 해당 라우트를 찾아 CanvasPage 생성
-                    // 3. 새 페이지가 현재 페이지 위에 Push됨 (스택 구조)
-                    // 4. 사용자에게는 새 화면이 나타나는 것처럼 보임
-                    print('🎨 Canvas Page로 이동 중...');
                     context.push('/canvas');
                   },
                 ),
@@ -120,15 +107,13 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // 📄 2. PDF 불러오기 버튼
-                HomePage.buildNavigationCard(
+                buildNavigationCard(
                   context: context,
                   icon: Icons.picture_as_pdf,
                   title: 'PDF 파일 열기',
                   subtitle: 'PDF 문서를 불러와 그 위에 필기하세요',
                   color: const Color(0xFFF44336),
                   onTap: () async {
-                    print('PDF 파일 열기 버튼 탭됨.');
-                    // 웹 플랫폼에서는 bytes로 파일을 읽어옵니다.
                     final result = await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
@@ -140,25 +125,17 @@ class HomePage extends StatelessWidget {
                         // 웹: bytes 데이터를 extra로 전달
                         final fileBytes = result.files.single.bytes;
                         if (fileBytes != null) {
-                          print('PDF 파일 선택됨 (웹): ${fileBytes.length} bytes');
                           // ignore: use_build_context_synchronously
                           context.push('/pdf_canvas', extra: fileBytes);
-                        } else {
-                          print('웹에서 파일 bytes를 읽는 데 실패했습니다.');
                         }
                       } else {
                         // 모바일/데스크탑: 파일 경로를 extra로 전달
                         final filePath = result.files.single.path;
                         if (filePath != null) {
-                          print('PDF 파일 선택됨: $filePath');
                           // ignore: use_build_context_synchronously
                           context.push('/pdf_canvas', extra: filePath);
-                        } else {
-                          print('파일 경로를 가져오는 데 실패했습니다.');
                         }
                       }
-                    } else {
-                      print('PDF 파일 선택 취소 또는 실패.');
                     }
                   },
                 ),
@@ -166,14 +143,13 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // 📊 그래프 뷰 버튼
-                HomePage.buildNavigationCard(
+                buildNavigationCard(
                   context: context,
                   icon: Icons.bubble_chart,
                   title: '그래프 뷰',
                   subtitle: '노트 간의 연결 관계를 시각적으로 확인하세요',
                   color: const Color(0xFF9C27B0),
                   onTap: () {
-                    print('📊 그래프 뷰 페이지로 이동 중...');
                     context.push('/graph_view');
                   },
                 ),
@@ -217,45 +193,26 @@ class HomePage extends StatelessWidget {
   }
 
   /// 🎯 네비게이션 카드 위젯
-  ///
-  /// 이 위젯은 각 페이지로 이동하는 버튼을 만들어줍니다.
-  ///
-  /// 📱 매개변수 설명:
-  /// - context: 현재 위젯의 BuildContext (네비게이션에 필요)
-  /// - icon: 카드에 표시할 아이콘
-  /// - title: 카드의 제목 텍스트
-  /// - subtitle: 카드의 설명 텍스트
-  /// - color: 카드의 테마 색상
-  /// - onTap: 카드를 탭했을 때 실행할 함수 (VoidCallback)
-  ///
-  /// 🔄 동작 과정:
-  /// 1. 사용자가 카드를 터치
-  /// 2. GestureDetector가 터치 이벤트 감지
-  /// 3. onTap 콜백 함수 실행
-  /// 4. context.push()를 통해 새 페이지로 이동 (go_router)
   static Widget buildNavigationCard({
     required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
     required Color color,
-    required VoidCallback onTap, // 👆 이 함수가 버튼 동작을 정의함
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
-      // 🖱️ GestureDetector: 사용자의 터치/탭을 감지하는 위젯
-      // onTap에 전달된 함수가 사용자가 카드를 탭했을 때 실행됩니다.
       onTap: onTap,
       child: AnimatedContainer(
-        // 🎭 AnimatedContainer: 터치 시 부드러운 애니메이션 효과
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+          border: Border.all(color: color.withOpacity(0.3), width: 2),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -267,7 +224,7 @@ class HomePage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(

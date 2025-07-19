@@ -1,6 +1,7 @@
 import 'package:isar/isar.dart';
-import 'note.dart';
+
 import 'canvas_object.dart';
+import 'note.dart';
 
 part 'link.g.dart';
 

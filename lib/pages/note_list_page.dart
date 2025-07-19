@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 
 import '../main.dart' as app_main;
+import '../models/canvas_object.dart';
 import '../models/note.dart';
 import 'canvas_page.dart';
+
+typedef NoteTapCallback = void Function(int noteId);
 
 typedef NoteCreatedCallback = void Function();
 
@@ -11,7 +14,7 @@ class NoteListPage extends StatefulWidget {
   const NoteListPage({super.key, this.isLinkMode = false, this.onNoteTap});
 
   final bool isLinkMode; // 링크 대상 노트를 선택하는 모드인지 여부
-  final Function(int noteId)? onNoteTap; // 링크 대상 노트 선택 시 호출될 콜백
+  final NoteTapCallback? onNoteTap; // 링크 대상 노트 선택 시 호출될 콜백
 
   @override
   State<NoteListPage> createState() => _NoteListPageState();
@@ -38,7 +41,7 @@ class _NoteListPageState extends State<NoteListPage> {
         _isLoading = false;
       });
     } catch (e) {
-      print('노트 로딩 중 오류 발생: $e');
+      
       setState(() {
         _isLoading = false;
       });
@@ -46,9 +49,9 @@ class _NoteListPageState extends State<NoteListPage> {
     }
   }
 
-  Future<void> _createNewNote() async {
+  Future<void> _createNewNote(String title) async {
     final newNote = Note()
-      ..title = '새 노트 ${notes.length + 1}'
+      ..title = title
       ..creationDate = DateTime.now()
       ..lastModifiedDate = DateTime.now();
 
@@ -57,6 +60,36 @@ class _NoteListPageState extends State<NoteListPage> {
     });
 
     _loadNotes(); // 목록 새로고침
+  }
+
+  void _showCreateNoteDialog() {
+    final textController = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('새 노트 만들기'),
+        content: TextField(
+          controller: textController,
+          decoration: const InputDecoration(hintText: '노트 제목을 입력하세요'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              final noteTitle = textController.text;
+              if (noteTitle.isNotEmpty) {
+                Navigator.pop(context);
+                _createNewNote(noteTitle);
+              }
+            },
+            child: const Text('생성'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _deleteNote(int id) async {
@@ -72,10 +105,22 @@ class _NoteListPageState extends State<NoteListPage> {
       appBar: AppBar(
         title: Text(widget.isLinkMode ? '링크할 노트 선택' : '내 노트'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_sweep),
+            onPressed: () async {
+              await app_main.isar.writeTxn(() async {
+                await app_main.isar.collection<CanvasObject>().clear();
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('모든 필기 데이터가 삭제되었습니다.')),
+              );
+            },
+            tooltip: '모든 필기 삭제',
+          ),
           if (!widget.isLinkMode) // 링크 모드가 아닐 때만 새 노트 버튼 표시
             IconButton(
               icon: const Icon(Icons.add),
-              onPressed: _createNewNote,
+              onPressed: _showCreateNoteDialog,
               tooltip: '새 노트 만들기',
             ),
         ],
@@ -107,7 +152,7 @@ class _NoteListPageState extends State<NoteListPage> {
                             widget.onNoteTap?.call(note.id);
                           } else {
                             // 일반 모드일 경우, 캔버스 페이지로 이동
-                            Navigator.push(
+                            Navigator.push<void>(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => CanvasPage(

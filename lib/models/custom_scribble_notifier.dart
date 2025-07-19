@@ -1,4 +1,4 @@
-import 'dart:convert';
+
 
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
@@ -45,7 +45,7 @@ class CustomScribbleNotifier extends ScribbleNotifier {
       await app_main.isar.writeTxn(() async {
         await app_main.isar.canvasObjects.put(canvasObject);
       });
-      print('CanvasObject 저장됨: ${canvasObject.id}');
+      
     }
 
     
