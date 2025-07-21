@@ -42,9 +42,10 @@ class PdfNoteService {
 
       // 3. 고유 ID 생성
       final noteId = 'pdf_note_${DateTime.now().millisecondsSinceEpoch}';
-      final title = customTitle ?? 
-                   _extractTitleFromPath(pdfFilePath) ?? 
-                   'PDF 노트 ${DateTime.now().toString().substring(0, 16)}';
+      final title =
+          customTitle ??
+          _extractTitleFromPath(pdfFilePath) ??
+          'PDF 노트 ${DateTime.now().toString().substring(0, 16)}';
 
       // 4. PDF 페이지별 NotePageModel 생성
       final pages = <NotePageModel>[];
