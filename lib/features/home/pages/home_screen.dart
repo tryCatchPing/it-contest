@@ -70,19 +70,6 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
 
-                const SizedBox(height: 16),
-
-                // PDF 불러오기 버튼 (나중에 메인 기능으로 통합 예정)
-                NavigationCard(
-                  icon: Icons.picture_as_pdf,
-                  title: 'PDF 파일 열기',
-                  subtitle: 'PDF 문서를 불러와 그 위에 필기하세요',
-                  color: const Color(0xFFF44336),
-                  onTap: () => _handlePdfFilePicker(context),
-                ),
-
-                const SizedBox(height: 16),
-
                 // 프로젝트 정보 (재사용 가능한 InfoCard 사용)
                 const InfoCard.warning(
                   message: '개발 상태: Canvas 기본 기능 + UI 와이어프레임 완성',
