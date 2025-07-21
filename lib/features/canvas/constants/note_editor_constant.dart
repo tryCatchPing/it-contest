@@ -1,6 +1,6 @@
 class NoteEditorConstants {
   static const double canvasWidth = 2000.0;
   static const double canvasHeight = 2000.0;
-  static const double canvasScale = 1.5;
+  static const double canvasScale = 1.2;
   static const int maxHistoryLength = 100;
 }

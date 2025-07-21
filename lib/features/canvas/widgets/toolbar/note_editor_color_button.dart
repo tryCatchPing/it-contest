@@ -37,6 +37,8 @@ class NoteEditorColorButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
+      width: 36,
+      height: 36,
       duration: kThemeAnimationDuration,
       decoration: ShapeDecoration(
         shape: CircleBorder(
@@ -56,6 +58,8 @@ class NoteEditorColorButton extends StatelessWidget {
           side: isActive
               ? const BorderSide(color: Colors.white, width: 2)
               : const BorderSide(color: Colors.transparent),
+          minimumSize: const Size(32, 32), // 기본 48x48에서 32x32로 축소 (2/3)
+          padding: const EdgeInsets.all(4), // 패딩 축소
         ),
         onPressed: onPressed,
         icon: child ?? const SizedBox(),

@@ -13,11 +13,14 @@ class NoteEditorPressureToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Switch.adaptive(
-      value: simulatePressure,
-      onChanged: onChanged,
-      activeColor: Colors.orange[600],
-      inactiveTrackColor: Colors.green[200],
+    return Transform.scale(
+      scale: 0.75, // 전체 크기를 75%로 축소 (약 2/3)
+      child: Switch.adaptive(
+        value: simulatePressure,
+        onChanged: onChanged,
+        activeColor: Colors.orange[600],
+        inactiveTrackColor: Colors.green[200],
+      ),
     );
   }
 }

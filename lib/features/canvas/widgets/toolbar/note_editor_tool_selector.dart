@@ -56,7 +56,7 @@ class NoteEditorToolSelector extends StatelessWidget {
       valueListenable: notifier,
       builder: (context, state, child) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: notifier.toolMode == drawingMode
@@ -65,6 +65,8 @@ class NoteEditorToolSelector extends StatelessWidget {
               foregroundColor: notifier.toolMode == drawingMode
                   ? Colors.white
                   : null,
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+              textStyle: const TextStyle(fontSize: 12),
             ),
             onPressed: () {
               print('onPressed: $drawingMode');
