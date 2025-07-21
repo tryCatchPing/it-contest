@@ -41,7 +41,7 @@ class NoteEditorCanvas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 64),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           // 캔버스 영역 - 남은 공간을 자동으로 모두 채움
@@ -61,6 +61,8 @@ class NoteEditorCanvas extends StatelessWidget {
               },
             ),
           ),
+
+          // 툴바 (하단) - 페이지 네비게이션 포함
           NoteEditorToolbar(
             notifier: currentNotifier,
             canvasWidth: _canvasWidth,
@@ -68,6 +70,11 @@ class NoteEditorCanvas extends StatelessWidget {
             transformationController: transformationController,
             simulatePressure: simulatePressure,
             onPressureToggleChanged: onPressureToggleChanged,
+            // 페이지 네비게이션 파라미터 추가
+            totalPages: totalPages,
+            currentPageIndex: currentPageIndex,
+            pageController: pageController,
+            onPageChanged: onPageChanged,
           ),
         ],
       ),
