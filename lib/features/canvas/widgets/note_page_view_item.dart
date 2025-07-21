@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
@@ -5,7 +7,7 @@ import '../constants/note_editor_constant.dart';
 import '../notifiers/custom_scribble_notifier.dart';
 import 'canvas_background_widget.dart';
 
-class NotePageViewItem extends StatelessWidget {
+class NotePageViewItem extends StatefulWidget {
   const NotePageViewItem({
     super.key,
     required this.pageController,
@@ -22,10 +24,52 @@ class NotePageViewItem extends StatelessWidget {
   final bool simulatePressure;
 
   @override
+  State<NotePageViewItem> createState() => _NotePageViewItemState();
+}
+
+class _NotePageViewItemState extends State<NotePageViewItem> {
+  Timer? _debounceTimer;
+  double _lastScale = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.transformationController.addListener(_onScaleChanged);
+    _updateScale(); // 초기 스케일 설정
+  }
+
+  @override
+  void dispose() {
+    widget.transformationController.removeListener(_onScaleChanged);
+    _debounceTimer?.cancel();
+    super.dispose();
+  }
+
+  // 🎯 포인트 간격 조정을 위한 스케일 동기화
+  void _onScaleChanged() {
+    final currentScale = widget.transformationController.value
+        .getMaxScaleOnAxis();
+
+    // 미세한 변화 무시 (성능 최적화)
+    if ((currentScale - _lastScale).abs() < 0.01) return;
+    _lastScale = currentScale;
+
+    // 디바운스: 빠른 스케일 변화 시 마지막 값만 적용
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 50), _updateScale);
+  }
+
+  void _updateScale() {
+    final currentScale = widget.transformationController.value
+        .getMaxScaleOnAxis();
+    // 🔧 포인트 간격 조정용으로만 scaleFactor 사용
+    widget.notifier.syncWithViewerScale(currentScale);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // 실제 그리기 영역 크기 계산
-    final drawingWidth = notifier.page!.drawingAreaWidth;
-    final drawingHeight = notifier.page!.drawingAreaHeight;
+    final drawingWidth = widget.notifier.page!.drawingAreaWidth;
+    final drawingHeight = widget.notifier.page!.drawingAreaHeight;
 
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -35,38 +79,37 @@ class NotePageViewItem extends StatelessWidget {
         surfaceTintColor: Colors.white,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          // TODO(xodnd): 캔버스 기본 로딩 시 중앙 정렬 필요
           child: InteractiveViewer(
-            transformationController: transformationController,
+            transformationController: widget.transformationController,
             minScale: 0.3,
             maxScale: 3.0,
             constrained: false,
-            panEnabled: true, // 패닝 활성화
-            scaleEnabled: true, // 스케일 활성화
+            panEnabled: true,
+            scaleEnabled: true,
+            // 🔧 인터랙션 종료 시 최종 동기화
+            onInteractionEnd: (details) {
+              _debounceTimer?.cancel();
+              _updateScale();
+            },
             child: SizedBox(
-              // 캔버스 주변에 여백 공간 제공 (축소 시 필요)
               width: drawingWidth * NoteEditorConstants.canvasScale,
               height: drawingHeight * NoteEditorConstants.canvasScale,
               child: Center(
                 child: SizedBox(
-                  // 실제 캔버스: PDF/그리기 영역
                   width: drawingWidth,
                   height: drawingHeight,
                   child: Stack(
                     children: [
-                      // 배경 레이어 (PDF 이미지 또는 빈 캔버스)
                       CanvasBackgroundWidget(
-                        page: notifier.page!,
+                        page: widget.notifier.page!,
                         width: drawingWidth,
                         height: drawingHeight,
                       ),
-
-                      // 그리기 레이어 (투명한 캔버스) - 클리핑 적용
                       ClipRect(
                         child: Scribble(
-                          notifier: notifier, // 페이지별 notifier 사용
+                          notifier: widget.notifier,
                           drawPen: true,
-                          simulatePressure: simulatePressure,
+                          simulatePressure: widget.simulatePressure,
                         ),
                       ),
                     ],
