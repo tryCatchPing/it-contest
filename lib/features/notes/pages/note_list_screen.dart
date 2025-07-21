@@ -5,6 +5,7 @@ import '../../../shared/routing/app_routes.dart';
 import '../../../shared/services/pdf_note_service.dart';
 import '../../../shared/widgets/navigation_card.dart';
 import '../data/fake_notes.dart';
+import '../models/note_model.dart';
 
 class NoteListScreen extends StatefulWidget {
   const NoteListScreen({super.key});
@@ -60,6 +61,46 @@ class _NoteListScreenState extends State<NoteListScreen> {
         setState(() {
           _isImporting = false;
         });
+      }
+    }
+  }
+
+  void _createBlankNote() {
+    try {
+      // 고유 ID 생성
+      final noteId = 'blank_note_${DateTime.now().millisecondsSinceEpoch}';
+      final title = '새 노트 ${DateTime.now().toString().substring(0, 16)}';
+
+      // 빈 노트 생성 (기본 3페이지)
+      final blankNote = NoteModel.blank(
+        noteId: noteId,
+        title: title,
+        initialPageCount: 1,
+      );
+
+      // TODO: 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
+      fakeNotes.add(blankNote);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('빈 노트 "$title"가 생성되었습니다!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        setState(() {
+          // UI 업데이트를 위한 setState
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('노트 생성 중 오류가 발생했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -164,6 +205,33 @@ class _NoteListScreenState extends State<NoteListScreen> {
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // 노트 생성 버튼
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: const Color(0xFF6750A4),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 24,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(
+                          color: Color(0xFF6750A4),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    onPressed: _createBlankNote,
+                    child: const Text('노트 생성'),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
               ],
             ),
           ),
