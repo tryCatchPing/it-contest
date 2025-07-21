@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:scribble/scribble.dart';
 
+import '../../canvas/constants/note_editor_constant.dart';
+
 enum PageBackgroundType {
   blank,
   pdf,
@@ -54,6 +56,22 @@ class NotePageModel {
 
   /// 렌더링된 PDF 페이지 이미지 조회
   Uint8List? get renderedPageImage => _renderedPageImage;
+
+  /// 실제 그리기 영역의 너비를 반환
+  double get drawingAreaWidth {
+    if (hasPdfBackground && backgroundWidth != null) {
+      return backgroundWidth!;
+    }
+    return NoteEditorConstants.canvasWidth;
+  }
+
+  /// 실제 그리기 영역의 높이를 반환
+  double get drawingAreaHeight {
+    if (hasPdfBackground && backgroundHeight != null) {
+      return backgroundHeight!;
+    }
+    return NoteEditorConstants.canvasHeight;
+  }
 
   /// PDF 배경용 생성자
   factory NotePageModel.withPdfBackground({
