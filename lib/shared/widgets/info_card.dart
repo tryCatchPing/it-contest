@@ -50,36 +50,24 @@ class InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveBackgroundColor =
-        backgroundColor ?? color.withValues(alpha: 0.1);
-    final effectiveBorderColor = borderColor ?? color.withValues(alpha: 0.3);
-    final effectiveTextColor = color.withValues(alpha: 0.9);
-    final effectiveIconColor = color.withValues(alpha: 0.7);
+        backgroundColor ?? color.withValues(alpha: 0.08);
+    final effectiveBorderColor = borderColor ?? color.withValues(alpha: 0.2);
+    final effectiveTextColor = color.withValues(alpha: 0.85);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: effectiveBackgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: effectiveBorderColor),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: effectiveBorderColor, width: 0.5),
       ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: effectiveIconColor,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                fontSize: 14,
-                color: effectiveTextColor,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
+      child: Text(
+        message,
+        style: TextStyle(
+          fontSize: 12,
+          color: effectiveTextColor,
+          fontWeight: FontWeight.w400,
+        ),
       ),
     );
   }
