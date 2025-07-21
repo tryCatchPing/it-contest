@@ -3,7 +3,7 @@ import 'package:scribble/scribble.dart';
 
 import '../constants/note_editor_constant.dart';
 import '../notifiers/custom_scribble_notifier.dart';
-import '../widgets/canvas_background_placeholder.dart';
+import 'canvas_background_widget.dart';
 
 class NotePageViewItem extends StatelessWidget {
   const NotePageViewItem({
@@ -24,7 +24,7 @@ class NotePageViewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       child: Card(
         elevation: 8,
         shadowColor: Colors.black26,
@@ -54,8 +54,9 @@ class NotePageViewItem extends StatelessWidget {
                   height: NoteEditorConstants.canvasHeight,
                   child: Stack(
                     children: [
-                      // 배경 레이어 (PDF 이미지)
-                      const CanvasBackgroundPlaceholder(
+                      // 배경 레이어 (PDF 이미지 또는 빈 캔버스)
+                      CanvasBackgroundWidget(
+                        page: notifier.page!,
                         width: NoteEditorConstants.canvasWidth,
                         height: NoteEditorConstants.canvasHeight,
                       ),
