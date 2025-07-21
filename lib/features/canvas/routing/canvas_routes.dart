@@ -15,10 +15,16 @@ class CanvasRoutes {
       name: AppRoutes.noteEditName,
       builder: (context, state) {
         final noteId = state.pathParameters['noteId']!;
-        // TODO(추후): noteId를 사용해서 실제 노트 데이터 로드
-        // 현재는 임시로 tmpNote 사용
         print('📝 노트 편집 페이지: noteId = $noteId');
-        return NoteEditorScreen(note: fakeNote);
+        
+        // noteId로 실제 노트 찾기
+        final note = fakeNotes.firstWhere(
+          (note) => note.noteId == noteId,
+          orElse: () => fakeNote, // 찾지 못하면 기본 노트 반환
+        );
+        
+        print('🔍 찾은 노트: ${note.title} (${note.pages.length} 페이지)');
+        return NoteEditorScreen(note: note);
       },
     ),
   ];

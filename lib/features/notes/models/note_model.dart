@@ -1,14 +1,88 @@
+import 'dart:typed_data';
+
 import 'note_page_model.dart';
+
+enum NoteSourceType {
+  blank,
+  pdfBased,
+}
+
+// TODO(xodnd): 더 좋은 모델 구조로 수정 필요
+// TODO(xodnd): 웹 지원 안해도 되는 구조로 수정
 
 class NoteModel {
   final String noteId;
   final String title;
-  // 일단은 페이지 객체로
   List<NotePageModel> pages;
+
+  // PDF 메타데이터
+  final NoteSourceType sourceType;
+  final String? sourcePdfPath; // 원본 PDF 파일 경로
+  final Uint8List? sourcePdfBytes; // 원본 PDF 바이트 데이터 (웹용)
+  final int? totalPdfPages; // PDF 총 페이지 수
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   NoteModel({
     required this.noteId,
     required this.title,
     required this.pages,
-  });
+    this.sourceType = NoteSourceType.blank,
+    this.sourcePdfPath,
+    this.sourcePdfBytes,
+    this.totalPdfPages,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
+
+  /// PDF 기반 노트인지 확인
+  bool get isPdfBased => sourceType == NoteSourceType.pdfBased;
+
+  /// 빈 노트인지 확인
+  bool get isBlank => sourceType == NoteSourceType.blank;
+
+  /// PDF 기반 노트용 생성자
+  factory NoteModel.fromPdf({
+    required String noteId,
+    required String title,
+    required List<NotePageModel> pdfPages,
+    String? pdfPath,
+    Uint8List? pdfBytes,
+    required int totalPages,
+  }) {
+    return NoteModel(
+      noteId: noteId,
+      title: title,
+      pages: pdfPages,
+      sourceType: NoteSourceType.pdfBased,
+      sourcePdfPath: pdfPath,
+      sourcePdfBytes: pdfBytes,
+      totalPdfPages: totalPages,
+    );
+  }
+
+  /// 빈 노트용 생성자
+  factory NoteModel.blank({
+    required String noteId,
+    required String title,
+    int initialPageCount = 3,
+  }) {
+    final pages = List.generate(
+      initialPageCount,
+      (index) => NotePageModel(
+        noteId: noteId,
+        pageId: '${noteId}_page_${index + 1}',
+        pageNumber: index + 1,
+        jsonData: '{"lines":[]}',
+      ),
+    );
+
+    return NoteModel(
+      noteId: noteId,
+      title: title,
+      pages: pages,
+      sourceType: NoteSourceType.blank,
+    );
+  }
 }

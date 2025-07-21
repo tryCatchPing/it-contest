@@ -2,11 +2,67 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../shared/routing/app_routes.dart';
+import '../../../shared/services/pdf_note_service.dart';
 import '../../../shared/widgets/navigation_card.dart';
 import '../data/fake_notes.dart';
 
-class NoteListScreen extends StatelessWidget {
+class NoteListScreen extends StatefulWidget {
   const NoteListScreen({super.key});
+
+  @override
+  State<NoteListScreen> createState() => _NoteListScreenState();
+}
+
+// TODO(xodnd): 더 좋은 모델 구조로 수정 필요
+// TODO(xodnd): 웹 지원 안해도 되는 구조로 수정
+
+class _NoteListScreenState extends State<NoteListScreen> {
+  bool _isImporting = false;
+
+  Future<void> _importPdfNote() async {
+    if (_isImporting) return;
+
+    setState(() {
+      _isImporting = true;
+    });
+
+    try {
+      final pdfNote = await PdfNoteService.createNoteFromPdf();
+
+      if (pdfNote != null) {
+        // TODO: 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
+        fakeNotes.add(pdfNote);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('PDF 노트 "${pdfNote.title}"가 성공적으로 생성되었습니다!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          setState(() {
+            // UI 업데이트를 위한 setState
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF 노트 생성 중 오류가 발생했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isImporting = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +131,37 @@ class NoteListScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                       ],
                     ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // PDF 가져오기 버튼
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isImporting ? null : _importPdfNote,
+                    icon: _isImporting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.picture_as_pdf),
+                    label: Text(
+                      _isImporting ? 'PDF 가져오는 중...' : 'PDF 파일에서 노트 생성',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6750A4),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 24,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ),
               ],
