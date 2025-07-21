@@ -23,6 +23,10 @@ class NotePageViewItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 실제 그리기 영역 크기 계산
+    final drawingWidth = notifier.page!.drawingAreaWidth;
+    final drawingHeight = notifier.page!.drawingAreaHeight;
+
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Card(
@@ -41,31 +45,29 @@ class NotePageViewItem extends StatelessWidget {
             scaleEnabled: true, // 스케일 활성화
             child: SizedBox(
               // 캔버스 주변에 여백 공간 제공 (축소 시 필요)
-              width:
-                  NoteEditorConstants.canvasWidth *
-                  NoteEditorConstants.canvasScale,
-              height:
-                  NoteEditorConstants.canvasHeight *
-                  NoteEditorConstants.canvasScale,
+              width: drawingWidth * NoteEditorConstants.canvasScale,
+              height: drawingHeight * NoteEditorConstants.canvasScale,
               child: Center(
                 child: SizedBox(
                   // 실제 캔버스: PDF/그리기 영역
-                  width: NoteEditorConstants.canvasWidth,
-                  height: NoteEditorConstants.canvasHeight,
+                  width: drawingWidth,
+                  height: drawingHeight,
                   child: Stack(
                     children: [
                       // 배경 레이어 (PDF 이미지 또는 빈 캔버스)
                       CanvasBackgroundWidget(
                         page: notifier.page!,
-                        width: NoteEditorConstants.canvasWidth,
-                        height: NoteEditorConstants.canvasHeight,
+                        width: drawingWidth,
+                        height: drawingHeight,
                       ),
 
-                      // 그리기 레이어 (투명한 캔버스)
-                      Scribble(
-                        notifier: notifier, // 페이지별 notifier 사용
-                        drawPen: true,
-                        simulatePressure: simulatePressure,
+                      // 그리기 레이어 (투명한 캔버스) - 클리핑 적용
+                      ClipRect(
+                        child: Scribble(
+                          notifier: notifier, // 페이지별 notifier 사용
+                          drawPen: true,
+                          simulatePressure: simulatePressure,
+                        ),
                       ),
                     ],
                   ),
