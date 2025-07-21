@@ -67,11 +67,13 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         throw Exception('PDF 페이지 번호가 유효하지 않습니다: $pageNumber');
       }
 
+      const scaleFactor = 3.0;
+
       // PDF 페이지 렌더링
       final pdfPage = await document.getPage(pageNumber);
       final pageImage = await pdfPage.render(
-        width: pdfPage.width,
-        height: pdfPage.height,
+        width: pdfPage.width * scaleFactor,
+        height: pdfPage.height * scaleFactor,
         format: PdfPageImageFormat.jpeg,
       );
 
