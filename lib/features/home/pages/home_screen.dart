@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../shared/routing/app_routes.dart';
-import '../../../shared/services/file_picker_service.dart';
 import '../../../shared/widgets/app_branding_header.dart';
 import '../../../shared/widgets/info_card.dart';
 import '../../../shared/widgets/navigation_card.dart';
@@ -80,18 +79,5 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// PDF 파일 선택 처리 메서드
-  ///
-  /// 🔄 나중에 메인 기능으로 통합될 때 FilePickerService를 사용하면 됩니다.
-  Future<void> _handlePdfFilePicker(BuildContext context) async {
-    // 새로운 FilePickerService 사용
-    final fileData = await FilePickerService.pickPdfFile();
-
-    if (fileData != null && context.mounted) {
-      // PDF 캔버스 페이지로 이동
-      context.pushNamed(AppRoutes.pdfCanvasName, extra: fileData);
-    }
   }
 }
