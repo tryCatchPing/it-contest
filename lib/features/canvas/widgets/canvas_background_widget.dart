@@ -1,15 +1,12 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 
 import '../../notes/models/note_page_model.dart';
 
-// TODO(xodnd): 웹 지원 안해도 되는 구조로 수정
-
-/// 캔버스 배경을 표시하는 위젯
+/// 캔버스 배경을 표시하는 위젯 (모바일 앱 전용)
 ///
 /// 페이지 타입에 따라 빈 캔버스 또는 PDF 페이지를 표시합니다.
+/// 파일 경로 기반으로 작동합니다.
 class CanvasBackgroundWidget extends StatefulWidget {
   const CanvasBackgroundWidget({
     required this.page,
@@ -49,7 +46,10 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   }
 
   Future<void> _loadPdfPage() async {
-    if (!widget.page.hasPdfBackground) return;
+    if (!widget.page.hasPdfBackground ||
+        widget.page.backgroundPdfPath == null) {
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -57,18 +57,10 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
     });
 
     try {
-      PdfDocument? document;
-
-      // PDF 문서 열기 - 웹에서 ArrayBuffer detached 문제 해결
-      if (widget.page.safePdfBytes != null) {
-        // safePdfBytes getter를 통해 안전한 복사본 사용 (웹/모바일 모두 지원)
-        final safeBytes = widget.page.safePdfBytes!;
-        document = await PdfDocument.openData(safeBytes);
-      } else if (widget.page.backgroundPdfPath != null) {
-        document = await PdfDocument.openFile(widget.page.backgroundPdfPath!);
-      } else {
-        throw Exception('PDF 파일 경로 또는 데이터가 없습니다.');
-      }
+      // PDF 문서 열기
+      final document = await PdfDocument.openFile(
+        widget.page.backgroundPdfPath!,
+      );
 
       final pageNumber = widget.page.backgroundPdfPageNumber ?? 1;
       if (pageNumber > document.pagesCount) {
@@ -84,9 +76,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
       );
 
       if (pageImage != null) {
-        // 렌더링된 이미지도 복사본으로 저장하여 안전성 확보
-        final imageBytes = Uint8List.fromList(pageImage.bytes);
-        widget.page.setRenderedPageImage(imageBytes);
+        widget.page.setRenderedPageImage(pageImage.bytes);
         if (mounted) {
           setState(() {
             _isLoading = false;

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'note_page_model.dart';
 
 enum NoteSourceType {
@@ -7,18 +5,14 @@ enum NoteSourceType {
   pdfBased,
 }
 
-// TODO(xodnd): 더 좋은 모델 구조로 수정 필요
-// TODO(xodnd): 웹 지원 안해도 되는 구조로 수정
-
 class NoteModel {
   final String noteId;
   final String title;
   List<NotePageModel> pages;
 
-  // PDF 메타데이터
+  // PDF 메타데이터 (모바일 앱 전용)
   final NoteSourceType sourceType;
   final String? sourcePdfPath; // 원본 PDF 파일 경로
-  final Uint8List? sourcePdfBytes; // 원본 PDF 바이트 데이터 (웹용)
   final int? totalPdfPages; // PDF 총 페이지 수
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -29,7 +23,6 @@ class NoteModel {
     required this.pages,
     this.sourceType = NoteSourceType.blank,
     this.sourcePdfPath,
-    this.sourcePdfBytes,
     this.totalPdfPages,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -47,8 +40,7 @@ class NoteModel {
     required String noteId,
     required String title,
     required List<NotePageModel> pdfPages,
-    String? pdfPath,
-    Uint8List? pdfBytes,
+    required String pdfPath,
     required int totalPages,
   }) {
     return NoteModel(
@@ -57,7 +49,6 @@ class NoteModel {
       pages: pdfPages,
       sourceType: NoteSourceType.pdfBased,
       sourcePdfPath: pdfPath,
-      sourcePdfBytes: pdfBytes,
       totalPdfPages: totalPages,
     );
   }

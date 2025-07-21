@@ -23,6 +23,7 @@ final fakePdfNote = NoteModel.fromPdf(
       pageId: 'pdf_note_1_page_1',
       pageNumber: 1,
       jsonData: '{"lines":[]}', // 초기에는 빈 스케치
+      pdfPath: '/fake/sample.pdf', // 시뮬레이션용 가짜 경로
       pdfPageNumber: 1,
       pdfWidth: 595.0, // A4 크기
       pdfHeight: 842.0,
@@ -34,11 +35,13 @@ final fakePdfNote = NoteModel.fromPdf(
       jsonData: '''
 {"lines":[{"points":[{"x":100,"y":100,"pressure":0.5},{"x":200,"y":150,"pressure":0.5},{"x":300,"y":100,"pressure":0.5}],"color":4294901760,"width":3}]}
 ''', // PDF 위에 그어진 스케치 예시
+      pdfPath: '/fake/sample.pdf', // 시뮬레이션용 가짜 경로  
       pdfPageNumber: 2,
       pdfWidth: 595.0,
       pdfHeight: 842.0,
     ),
   ],
+  pdfPath: '/fake/sample.pdf', // 시뮬레이션용 가짜 경로
   totalPages: 2,
 );
 
