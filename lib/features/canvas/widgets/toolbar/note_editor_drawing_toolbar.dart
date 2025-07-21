@@ -20,14 +20,14 @@ class NoteEditorDrawingToolbar extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         NoteEditorToolSelector(notifier: notifier),
-        const VerticalDivider(width: 32),
+        const VerticalDivider(width: 12),
         NoteEditorColorSelector(notifier: notifier, toolMode: ToolMode.pen),
-        const VerticalDivider(width: 32),
+        const VerticalDivider(width: 12),
         NoteEditorColorSelector(
           notifier: notifier,
           toolMode: ToolMode.highlighter,
         ),
-        const VerticalDivider(width: 32),
+        const VerticalDivider(width: 12),
         NoteEditorStrokeSelector(notifier: notifier),
       ],
     );

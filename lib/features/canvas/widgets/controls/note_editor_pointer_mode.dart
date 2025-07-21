@@ -20,14 +20,17 @@ class NoteEditorPointerMode extends StatelessWidget {
           multiSelectionEnabled: false,
           emptySelectionAllowed: false,
           onSelectionChanged: (v) => notifier.setAllowedPointersMode(v.first),
+          style: ButtonStyle(
+            padding: WidgetStateProperty.all(const EdgeInsets.all(4)),
+          ),
           segments: const [
             ButtonSegment(
               value: ScribblePointerMode.all,
-              icon: Icon(Icons.touch_app),
+              icon: Icon(Icons.touch_app, size: 18), // 아이콘 크기 축소 (24->18)
             ),
             ButtonSegment(
               value: ScribblePointerMode.penOnly,
-              icon: Icon(Icons.draw),
+              icon: Icon(Icons.draw, size: 18), // 아이콘 크기 축소 (24->18)
             ),
           ],
           selected: {state.allowedPointersMode},

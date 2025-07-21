@@ -47,7 +47,7 @@ class NoteEditorColorSelector extends StatelessWidget {
     return ValueListenableBuilder<ScribbleState>(
       valueListenable: notifier,
       builder: (context, state, child) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 2),
         child: NoteEditorColorButton(
           color: color,
           isActive: state is Drawing && state.selectedColor == color.toARGB32(),
