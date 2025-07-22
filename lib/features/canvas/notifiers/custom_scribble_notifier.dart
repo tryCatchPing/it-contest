@@ -154,7 +154,8 @@ class CustomScribbleNotifier extends ScribbleNotifier
   // scaleFactor from affecting stroke width.
   // 
   // ⚠️  MAINTENANCE WARNING:
-  // - These methods must be manually updated when the scribble package is updated
+  // - These methods must be manually updated when the scribble package
+  //   is updated
   // - Check for changes in the original implementation
   // - Current scribble package version: Check pubspec.yaml for version
   // ========================================================================

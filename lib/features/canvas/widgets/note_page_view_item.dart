@@ -56,7 +56,7 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
 
     // 디바운스: 빠른 스케일 변화 시 마지막 값만 적용
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 50), _updateScale);
+    _debounceTimer = Timer(const Duration(milliseconds: 8), _updateScale);
   }
 
   void _updateScale() {
