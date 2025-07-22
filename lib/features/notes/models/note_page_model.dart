@@ -18,12 +18,15 @@ class NotePageModel {
 
   // PDF 배경 지원 필드들 (모바일 앱 전용)
   final PageBackgroundType backgroundType;
-  final String? backgroundPdfPath; // PDF 파일 경로
+  final String? backgroundPdfPath; // PDF 파일 경로 (앱 내부 저장)
   final int? backgroundPdfPageNumber; // PDF의 몇 번째 페이지인지
   final double? backgroundWidth; // 원본 PDF 페이지 너비
   final double? backgroundHeight; // 원본 PDF 페이지 높이
+  
+  // 사전 렌더링된 이미지 경로 (앱 내부 저장)
+  final String? preRenderedImagePath;
 
-  // 렌더링된 PDF 페이지 이미지 (메모리 캐싱용)
+  // 렌더링된 PDF 페이지 이미지 (메모리 캐싱용 - 레거시)
   Uint8List? _renderedPageImage;
 
   NotePageModel({
@@ -36,6 +39,7 @@ class NotePageModel {
     this.backgroundPdfPageNumber,
     this.backgroundWidth,
     this.backgroundHeight,
+    this.preRenderedImagePath,
   });
 
   /// JSON 데이터에서 Sketch 객체로 변환
@@ -49,12 +53,15 @@ class NotePageModel {
   /// PDF 배경이 있는지 확인
   bool get hasPdfBackground => backgroundType == PageBackgroundType.pdf;
 
-  /// 렌더링된 PDF 페이지 이미지 설정
+  /// 사전 렌더링된 이미지가 있는지 확인
+  bool get hasPreRenderedImage => preRenderedImagePath != null;
+
+  /// 렌더링된 PDF 페이지 이미지 설정 (레거시 지원)
   void setRenderedPageImage(Uint8List imageBytes) {
     _renderedPageImage = imageBytes;
   }
 
-  /// 렌더링된 PDF 페이지 이미지 조회
+  /// 렌더링된 PDF 페이지 이미지 조회 (레거시 지원)
   Uint8List? get renderedPageImage => _renderedPageImage;
 
   /// 실제 그리기 영역의 너비를 반환
@@ -83,6 +90,7 @@ class NotePageModel {
     required int pdfPageNumber,
     required double pdfWidth,
     required double pdfHeight,
+    String? preRenderedImagePath,
   }) {
     return NotePageModel(
       noteId: noteId,
@@ -94,6 +102,7 @@ class NotePageModel {
       backgroundPdfPageNumber: pdfPageNumber,
       backgroundWidth: pdfWidth,
       backgroundHeight: pdfHeight,
+      preRenderedImagePath: preRenderedImagePath,
     );
   }
 }
