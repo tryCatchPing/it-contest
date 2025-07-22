@@ -17,7 +17,7 @@ class PdfNoteService {
   ///
   /// [customTitle]: 사용자 지정 제목
   /// [preRenderImages]: 이미지 사전 렌더링 여부 (기본값: true)
-  /// 
+  ///
   /// Returns:
   /// - NoteModel: 성공적으로 생성된 PDF 기반 노트
   /// - null: 파일 선택 취소 또는 실패
@@ -81,7 +81,7 @@ class PdfNoteService {
 
         final pdfPage = await document.getPage(i);
         final pageId = '${noteId}_page_$i';
-        
+
         // 사전 렌더링된 이미지 경로 설정
         String? preRenderedImagePath;
         if (preRenderImages && i <= renderedImagePaths.length) {
@@ -134,62 +134,16 @@ class PdfNoteService {
     return nameWithoutExtension.isNotEmpty ? nameWithoutExtension : null;
   }
 
-  /// PDF 페이지를 미리 렌더링하여 캐싱합니다 (레거시 메서드)
-  ///
-  /// 🚨 DEPRECATED: FileStorageService.preRenderPdfPages를 사용하세요
-  /// 
-  /// 대용량 PDF의 경우 모든 페이지를 미리 렌더링하면
-  /// 메모리 사용량이 많아질 수 있으므로 필요에 따라 사용합니다.
-  @Deprecated('Use FileStorageService.preRenderPdfPages instead')
-  static Future<void> preRenderPages(NoteModel pdfNote) async {
-    if (!pdfNote.isPdfBased || pdfNote.sourcePdfPath == null) {
-      print('⚠️ PDF 기반 노트가 아니거나 파일 경로가 없습니다.');
-      return;
-    }
-
-    print('🎨 PDF 페이지 미리 렌더링 시작 (레거시 모드)...');
-
-    try {
-      final document = await PdfDocument.openFile(pdfNote.sourcePdfPath!);
-
-      for (int i = 0; i < pdfNote.pages.length; i++) {
-        final page = pdfNote.pages[i];
-        if (page.hasPdfBackground && page.renderedPageImage == null) {
-          print('🎨 페이지 ${i + 1} 렌더링 중...');
-
-          final pdfPage = await document.getPage(i + 1);
-          final pageImage = await pdfPage.render(
-            width: pdfPage.width,
-            height: pdfPage.height,
-            format: PdfPageImageFormat.jpeg,
-          );
-
-          if (pageImage != null) {
-            page.setRenderedPageImage(pageImage.bytes);
-            print('✅ 페이지 ${i + 1} 렌더링 완료');
-          }
-
-          await pdfPage.close();
-        }
-      }
-
-      await document.close();
-      print('✅ 모든 페이지 렌더링 완료');
-    } catch (e) {
-      print('❌ 페이지 렌더링 중 오류 발생: $e');
-    }
-  }
-
   /// 노트 삭제 시 관련 파일들을 정리합니다
   ///
   /// [noteId]: 삭제할 노트의 고유 ID
   static Future<void> deleteNoteWithFiles(String noteId) async {
     try {
       print('🗑️ 노트 및 관련 파일 삭제 시작: $noteId');
-      
+
       // FileStorageService를 통해 파일 삭제
       await FileStorageService.deleteNoteFiles(noteId);
-      
+
       print('✅ 노트 파일 삭제 완료: $noteId');
     } catch (e) {
       print('❌ 노트 파일 삭제 실패: $e');
