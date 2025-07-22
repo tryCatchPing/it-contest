@@ -28,10 +28,17 @@ class CustomScribbleNotifier extends ScribbleNotifier
   @override
   final page_model.NotePageModel? page;
 
-  // 🎯 핵심: InteractiveViewer 스케일과 동기화 (포인트 간격용)
+  // 🎯 핵심: scaleFactor를 1.0으로 고정하여 획 굵기 일관성 보장
   void syncWithViewerScale(double viewerScale) {
-    setScaleFactor(viewerScale);
+    // scaleFactor를 1.0으로 고정해서 획 굵기가 항상 동일하게 저장되도록 함
+    // InteractiveViewer의 Transform이 시각적 확대/축소 담당
+    setScaleFactor(1.0);
+    
+    // 포인트 간격은 별도로 조정 (필요시 _customScaleFactor 변수 사용)
+    _currentViewerScale = viewerScale;
   }
+  
+  double _currentViewerScale = 1.0;
 
   // 🔧 선 굵기 조정 방지: onPointerDown 오버라이드
   @override
@@ -54,8 +61,8 @@ class CustomScribbleNotifier extends ScribbleNotifier
         activeLine: SketchLine(
           points: [_getPointFromEvent(event)],
           color: (value as Drawing).selectedColor,
-          // 🎯 핵심 수정: scaleFactor로 나누지 않음!
-          width: value.selectedWidth, // 원래 굵기 그대로 사용
+          // 🎯 핵심 수정: scaleFactor를 1.0으로 고정했으므로 원본 굵기 사용
+          width: value.selectedWidth,
         ),
       );
     }
@@ -104,8 +111,8 @@ class CustomScribbleNotifier extends ScribbleNotifier
         : (_pointToOffset(currentLine.points.last) - event.localPosition)
               .distance;
 
-    // 🔧 포인트 간격에만 scaleFactor 적용 (필기감 개선)
-    final threshold = kPrecisePointerPanSlop / s.scaleFactor;
+    // 🔧 포인트 간격에는 실제 뷰어 스케일 적용 (필기감 개선)
+    final threshold = kPrecisePointerPanSlop / _currentViewerScale;
 
     if (distanceToLast <= threshold) return s;
 
@@ -119,14 +126,15 @@ class CustomScribbleNotifier extends ScribbleNotifier
     );
   }
 
-  // 🔧 지우개도 scaleFactor 적용 안함
+  // 🔧 지우개도 원본 굵기 사용
   ScribbleState? _erasePoint(PointerEvent event) {
+    final eraserWidth = value.selectedWidth;
     final filteredLines = value.sketch.lines
         .where(
           (l) => l.points.every(
             (p) =>
                 (event.localPosition - _pointToOffset(p)).distance >
-                l.width + value.selectedWidth, // scaleFactor 적용 안함
+                l.width + eraserWidth, // 원본 굵기 기준 지우기
           ),
         )
         .toList();
