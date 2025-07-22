@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:scribble/scribble.dart';
 
@@ -25,9 +24,6 @@ class NotePageModel {
   
   // 사전 렌더링된 이미지 경로 (앱 내부 저장)
   final String? preRenderedImagePath;
-
-  // 렌더링된 PDF 페이지 이미지 (메모리 캐싱용 - 레거시)
-  Uint8List? _renderedPageImage;
 
   NotePageModel({
     required this.noteId,
@@ -55,14 +51,6 @@ class NotePageModel {
 
   /// 사전 렌더링된 이미지가 있는지 확인
   bool get hasPreRenderedImage => preRenderedImagePath != null;
-
-  /// 렌더링된 PDF 페이지 이미지 설정 (레거시 지원)
-  void setRenderedPageImage(Uint8List imageBytes) {
-    _renderedPageImage = imageBytes;
-  }
-
-  /// 렌더링된 PDF 페이지 이미지 조회 (레거시 지원)
-  Uint8List? get renderedPageImage => _renderedPageImage;
 
   /// 실제 그리기 영역의 너비를 반환
   double get drawingAreaWidth {
