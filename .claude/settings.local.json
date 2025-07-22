@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(fvm flutter:*)"
+      "Bash(fvm flutter:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "mcp__Notion__fetch",
+      "mcp__Notion__update-page"
     ],
     "deny": []
   }
