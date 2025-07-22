@@ -1,19 +1,18 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:pdfx/pdfx.dart';
 
 import '../../../shared/services/file_storage_service.dart';
 import '../../notes/models/note_page_model.dart';
+import 'file_recovery_modal.dart';
 
 /// 캔버스 배경을 표시하는 위젯 (모바일 앱 전용)
 ///
 /// 페이지 타입에 따라 빈 캔버스 또는 PDF 페이지를 표시합니다.
 /// 
-/// 로딩 우선순위:
-/// 1. 사전 렌더링된 로컬 이미지 (최고 성능)
-/// 2. 메모리 캐시된 이미지 (레거시 지원)
-/// 3. PDF 실시간 렌더링 (fallback)
+/// 로딩 시스템:
+/// 1. 사전 렌더링된 로컬 이미지 파일 로드
+/// 2. 파일 손상 시 복구 모달 표시
 class CanvasBackgroundWidget extends StatefulWidget {
   const CanvasBackgroundWidget({
     required this.page,
@@ -56,7 +55,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
 
   /// 배경 이미지를 로딩하는 메인 메서드
   /// 
-  /// 우선순위: 사전 렌더링된 이미지 > 메모리 캐시 > PDF 실시간 렌더링
+  /// 사전 렌더링된 이미지 파일을 로드하고, 실패 시 복구 모달 표시
   Future<void> _loadBackgroundImage() async {
     if (!widget.page.hasPdfBackground) return;
 
@@ -81,18 +80,9 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         return;
       }
 
-      // 2. 메모리 캐시된 이미지 확인 (레거시 지원)
-      if (widget.page.renderedPageImage != null) {
-        print('✅ 메모리 캐시된 이미지 사용');
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // 3. PDF 실시간 렌더링 (fallback)
-      print('⚙️ PDF 실시간 렌더링 시작 (fallback)');
-      await _renderPdfPageRealtime();
+      // 2. 파일이 없거나 손상된 경우 복구 모달 표시 
+      print('❌ 사전 렌더링된 이미지를 찾을 수 없음 - 복구 필요');
+      throw Exception('사전 렌더링된 이미지 파일이 없거나 손상되었습니다.');
 
     } catch (e) {
       print('❌ 배경 이미지 로딩 실패: $e');
@@ -101,6 +91,8 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
           _isLoading = false;
           _errorMessage = '배경 이미지 로딩 실패: $e';
         });
+        // 파일 손상 감지 시 복구 모달 표시
+        _showRecoveryModal();
       }
     }
   }
@@ -136,53 +128,41 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
     }
   }
 
-  /// PDF 페이지를 실시간으로 렌더링 (fallback)
-  Future<void> _renderPdfPageRealtime() async {
-    if (widget.page.backgroundPdfPath == null) {
-      throw Exception('PDF 파일 경로가 없습니다.');
-    }
-
-    // PDF 문서 열기
-    final document = await PdfDocument.openFile(
-      widget.page.backgroundPdfPath!,
-    );
-
-    final pageNumber = widget.page.backgroundPdfPageNumber ?? 1;
-    if (pageNumber > document.pagesCount) {
-      throw Exception('PDF 페이지 번호가 유효하지 않습니다: $pageNumber');
-    }
-
-    const scaleFactor = 3.0;
-
-    // PDF 페이지 렌더링
-    final pdfPage = await document.getPage(pageNumber);
-    final pageImage = await pdfPage.render(
-      width: pdfPage.width * scaleFactor,
-      height: pdfPage.height * scaleFactor,
-      format: PdfPageImageFormat.jpeg,
-    );
-
-    if (pageImage != null) {
-      widget.page.setRenderedPageImage(pageImage.bytes);
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-      print('✅ PDF 실시간 렌더링 완료');
-    } else {
-      throw Exception('PDF 페이지 렌더링에 실패했습니다.');
-    }
-
-    await pdfPage.close();
-    await document.close();
-  }
 
   /// 재시도 버튼 클릭 시 호출
   Future<void> _retryLoading() async {
     _hasCheckedPreRenderedImage = false;
     _preRenderedImageFile = null;
     await _loadBackgroundImage();
+  }
+
+  /// 파일 손상 감지 시 복구 모달 표시
+  void _showRecoveryModal() {
+    // 노트 제목을 추출 (기본값 설정)
+    final noteTitle = widget.page.noteId.replaceAll('_', ' ');
+    
+    FileRecoveryModal.show(
+      context,
+      noteTitle: noteTitle,
+      onRerender: _handleRerender,
+      onDelete: _handleDelete,
+    );
+  }
+
+  /// 재렌더링 처리
+  Future<void> _handleRerender() async {
+    // TODO: PDF 재렌더링 로직 구현
+    // 현재는 간단히 재시도만 수행
+    print('🔄 재렌더링 시작...');
+    await _retryLoading();
+  }
+
+  /// 노트 삭제 처리
+  void _handleDelete() {
+    // TODO: 노트 삭제 로직 구현
+    print('🗑️ 노트 삭제 요청...');
+    // Navigator를 통해 이전 화면으로 돌아가기
+    Navigator.of(context).pop();
   }
 
   @override
@@ -211,7 +191,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
       return _buildErrorIndicator();
     }
 
-    // 1. 사전 렌더링된 로컬 이미지 우선 사용
+    // 사전 렌더링된 이미지 파일 표시
     if (_preRenderedImageFile != null) {
       return Image.file(
         _preRenderedImageFile!,
@@ -220,43 +200,16 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         height: widget.height,
         errorBuilder: (context, error, stackTrace) {
           print('⚠️ 사전 렌더링된 이미지 로딩 오류: $error');
-          // 이미지 파일 오류시 메모리 캐시나 실시간 렌더링으로 fallback
-          return _buildFallbackImage();
+          // 이미지 파일 오류 시 에러 표시
+          return _buildErrorIndicator();
         },
       );
     }
 
-    // 2. 메모리 캐시된 이미지 사용 (레거시)
-    final renderedImage = widget.page.renderedPageImage;
-    if (renderedImage != null) {
-      return Image.memory(
-        renderedImage,
-        fit: BoxFit.contain,
-        width: widget.width,
-        height: widget.height,
-      );
-    }
-
-    // 3. 로딩 중이 아니면 로딩 표시
+    // 파일이 없으면 로딩 표시
     return _buildLoadingIndicator();
   }
 
-  Widget _buildFallbackImage() {
-    // 메모리 캐시된 이미지가 있으면 사용
-    final renderedImage = widget.page.renderedPageImage;
-    if (renderedImage != null) {
-      return Image.memory(
-        renderedImage,
-        fit: BoxFit.contain,
-        width: widget.width,
-        height: widget.height,
-      );
-    }
-
-    // 없으면 다시 로딩 시도
-    Future.microtask(() => _loadBackgroundImage());
-    return _buildLoadingIndicator();
-  }
 
   Widget _buildBlankBackground() {
     return Container(
