@@ -143,7 +143,26 @@ class CustomScribbleNotifier extends ScribbleNotifier
   // 🔧 Point를 Offset으로 변환하는 헬퍼 메서드
   Offset _pointToOffset(Point point) => Offset(point.x, point.y);
 
-  // 기존 헬퍼 메서드들
+  // ========================================================================
+  // 🚨 COPIED PRIVATE METHODS FROM SCRIBBLE PACKAGE
+  // ========================================================================
+  // Source: scribble package (https://pub.dev/packages/scribble)
+  // Original file: lib/src/scribble_notifier.dart
+  // 
+  // These private methods were copied from the original ScribbleNotifier
+  // because we need to override pointer handling behavior to prevent
+  // scaleFactor from affecting stroke width.
+  // 
+  // ⚠️  MAINTENANCE WARNING:
+  // - These methods must be manually updated when the scribble package is updated
+  // - Check for changes in the original implementation
+  // - Current scribble package version: Check pubspec.yaml for version
+  // ========================================================================
+
+  /// Extracts Point from PointerEvent with pressure information
+  /// 
+  /// 📋 Original: ScribbleNotifier._getPointFromEvent()
+  /// 🔧 Modification: None - copied as-is from original implementation
   Point _getPointFromEvent(PointerEvent event) {
     final p = event.pressureMin == event.pressureMax
         ? 0.5
@@ -156,6 +175,10 @@ class CustomScribbleNotifier extends ScribbleNotifier
     );
   }
 
+  /// Finalizes the current active line and adds it to the sketch
+  /// 
+  /// 📋 Original: ScribbleNotifier._finishLineForState()
+  /// 🔧 Modification: None - copied as-is from original implementation
   ScribbleState _finishLineForState(ScribbleState s) {
     if (s case Drawing(activeLine: final activeLine?)) {
       return s.copyWith(
