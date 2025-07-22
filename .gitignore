@@ -28,6 +28,7 @@ migrate_working_dir/
 .cursorrules
 .copilot/
 .github/copilot/
+.claude/
 
 # Task Master AI & MCP
 .taskmaster/
