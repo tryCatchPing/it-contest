@@ -69,6 +69,20 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
 
+                const SizedBox(height: 16),
+
+                // 메인 페이지 테스트 버튼
+                NavigationCard(
+                  icon: Icons.folder_open,
+                  title: '메인 페이지 (테스트)',
+                  subtitle: 'Figma 디자인 기반 메인 페이지를 테스트해보세요',
+                  color: const Color(0xFF9E9E9E),
+                  onTap: () {
+                    print('📁 메인 페이지로 이동 중...');
+                    context.pushNamed(AppRoutes.mainPageName);
+                  },
+                ),
+
                 // 프로젝트 정보 (재사용 가능한 InfoCard 사용)
                 const InfoCard.warning(
                   message: '개발 상태: Canvas 기본 기능 + UI 와이어프레임 완성',

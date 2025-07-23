@@ -11,12 +11,14 @@ class AppRoutes {
   static const String noteList = '/notes';
   static const String noteEdit = '/notes/:noteId/edit'; // 더 명확한 경로
   static const String pdfCanvas = '/pdf-canvas';
+  static const String mainPage = '/main-page';
 
   // 🎯 라우트 이름 상수들 (GoRouter name 속성용)
   static const String homeName = 'home';
   static const String noteListName = 'noteList';
   static const String noteEditName = 'noteEdit';
   static const String pdfCanvasName = 'pdfCanvas';
+  static const String mainPageName = 'mainPage';
 
   // 🚀 타입 안전한 네비게이션 헬퍼 메서드들
 
@@ -32,6 +34,9 @@ class AppRoutes {
 
   /// PDF 캔버스 페이지로 이동
   static String pdfCanvasRoute() => pdfCanvas;
+
+  /// 메인 페이지로 이동
+  static String mainPageRoute() => mainPage;
 
   // 📋 추후 확장성을 위한 구조 예시
   //
