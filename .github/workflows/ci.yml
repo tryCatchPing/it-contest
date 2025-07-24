@@ -8,7 +8,7 @@ on:
 
 env:
   FLUTTER_VERSION: "3.32.5"
-  JAVA_VERSION: "11"
+  JAVA_VERSION: "17"
 
 jobs:
   analyze:
@@ -25,34 +25,32 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: "stable"
-          cache: true # ← Flutter SDK 재사용으로 ~2분 절약
+          cache: true
 
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Verify pub get
+      - name: Verify dependencies
         run: flutter pub deps
 
       - name: Run code analysis
         run: flutter analyze --no-fatal-infos
 
-  build:
-    name: Build Applications
+  build-android:
+    name: Build Android
     runs-on: ubuntu-latest
     needs: analyze
-    timeout-minutes: 30
-
-    strategy:
-      fail-fast: false
-      matrix:
-        # 임시로 Android 빌드 비활성화 - CI 환경의 복잡한 Android SDK/NDK 설정 문제로 인함
-        # 웹 빌드와 코드 분석을 통해 기본적인 품질 검증은 유지
-        # Android 빌드는 로컬 개발 환경에서 검증 후 추후 CI 재활성화 예정
-        build-target: [web] # android 임시 제외
+    timeout-minutes: 45
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -61,7 +59,6 @@ jobs:
           channel: "stable"
           cache: true
 
-      # 웹 전용으로 간소화된 의존성 캐싱
       - name: Cache Flutter dependencies
         uses: actions/cache@v4
         with:
@@ -74,87 +71,70 @@ jobs:
             ${{ runner.os }}-flutter-
 
       - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Verify Android build
         run: |
-          flutter pub get
-          flutter pub deps
-
-          # 설치된 패키지 확인
-          echo "Checking installed packages..."
-          flutter pub deps | grep -E "(pdfx|file_picker)" || echo "PDF packages not found (expected for non-PDF branches)"
-
-      # PDF.js 설정 (웹 전용)
-      - name: Setup PDF.js for web
-        run: |
-          echo "Checking PDF.js configuration..."
-
-          # web/index.html이 이미 PDF.js를 포함하고 있는지 확인
-          if [ -f "web/index.html" ] && grep -q "pdfjs-dist" web/index.html; then
-            echo "✅ PDF.js already configured, skipping installation"
+          if [ -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            echo "✅ Android APK build successful"
+            ls -la build/app/outputs/flutter-apk/
           else
-            echo "📦 Installing PDF.js for web..."
-
-            # pdfx 패키지가 있는지 확인
-            if flutter pub deps | grep -q "pdfx"; then
-              flutter pub run pdfx:install_web
-              echo "✅ PDF.js setup completed"
-            else
-              echo "⚠️ pdfx package not found, skipping PDF.js installation"
-              echo "This is expected for branches without PDF functionality"
-            fi
-          fi
-
-      - name: Verify web configuration
-        run: |
-          if [ -f "web/index.html" ]; then
-            echo "✅ web/index.html exists"
-
-            # PDF.js 설정 확인 (선택적)
-            if grep -q "pdfjs-dist" web/index.html; then
-              echo "✅ PDF.js scripts found in web/index.html"
-            else
-              echo "ℹ️ PDF.js scripts not found - this is normal for non-PDF branches"
-            fi
-          else
-            echo "❌ web/index.html not found"
+            echo "❌ Android APK build failed"
             exit 1
           fi
 
-      - name: Build Web Application
-        run: |
-          echo "Building web application..."
-          flutter build web --release
-          echo "✅ Web build completed successfully"
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: analyze
+    timeout-minutes: 45
 
-      - name: Verify web build output
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ runner.tool_cache }}/flutter
+            ~/.pub-cache
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_VERSION }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-${{ env.FLUTTER_VERSION }}-
+            ${{ runner.os }}-flutter-
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Install iOS dependencies
         run: |
-          if [ -d "build/web" ]; then
-            echo "✅ Web build output exists"
-            echo "Build size information:"
-            du -sh build/web
-            ls -la build/web/
+          cd ios
+          pod install
+          cd ..
+
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Verify iOS build
+        run: |
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            echo "✅ iOS build successful"
+            ls -la build/ios/iphoneos/
           else
-            echo "❌ Web build output not found"
+            echo "❌ iOS build failed"
             exit 1
           fi
-
-    # Android 빌드 (임시 비활성화)
-    #
-    # Android CI 빌드는 복잡한 SDK/NDK 환경 설정으로 인해 임시 비활성화됨
-    # 개발자들은 로컬 환경에서 Android 빌드 테스트를 계속 진행
-    #
-    # 재활성화 조건:
-    # 1. PDF 패키지 통합 완료
-    # 2. Android NDK 버전 충돌 해결
-    # 3. CI 환경에서 안정적인 Android 빌드 확인
-    #
-    # build-android:
-    #   name: Build Android (Disabled)
-    #   runs-on: ubuntu-latest
-    #   needs: analyze
-    #   if: false  # 임시 비활성화
-    #   steps:
-    #     - name: Android build placeholder
-    #       run: echo "Android builds temporarily disabled in CI"
 
   # 테스트 job (미래 사용을 위해 준비)
   # test:
