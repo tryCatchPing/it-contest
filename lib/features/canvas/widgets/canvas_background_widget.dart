@@ -96,12 +96,14 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
       throw Exception('사전 렌더링된 이미지 파일이 없거나 손상되었습니다.');
     } catch (e) {
       print('❌ 배경 이미지 로딩 실패: $e');
+      // 해당 위젯이 현재 위젯트리에 마운트 되어있는가?
       if (mounted) {
         setState(() {
           _isLoading = false;
           _errorMessage = '배경 이미지 로딩 실패: $e';
         });
         // 파일 손상 감지 시 복구 모달 표시
+        // setState 호출 스킵 -> 안전하게 비동기 처리
         _showRecoveryModal();
       }
     }
