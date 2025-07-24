@@ -157,17 +157,71 @@ lib/features/[feature_name]/
 
 ### Working with PDF Features
 
-**🚀 Recently Enhanced PDF System (Major Update v2.1):**
+**🚀 Service-Centered PDF Management System (Major Update v2.2):**
 
-- **File Storage**: `FileStorageService` manages internal PDF storage and image pre-rendering
-- **Note Creation**: `PdfNoteService` handles PDF-to-note conversion with automatic file copying
-- **Background Display**: `CanvasBackgroundWidget` implements simplified 2-tier loading system:
-  1. Pre-rendered local images (fastest, ~50ms)
-  2. User-controlled file recovery modal (transparent error handling)
-- **File Structure**: PDFs stored in `/Application Documents/notes/{noteId}/` with pre-rendered images
-- **Performance**: Consistent fast loading with predictable error handling
-- **Error Recovery**: `FileRecoveryModal` provides clear user options (re-render vs delete) instead of automatic fallbacks
-- **Memory Efficiency**: 90% memory usage reduction by removing memory cache layer
+#### **Complete PDF Workflow - From Import to Recovery**
+
+**🔄 Import & Creation Flow:**
+1. **File Selection**: User selects PDF from local storage (with validation)
+2. **Metadata Extraction**: PDF properties (pages, size, title) extracted
+3. **Original Storage**: PDF copied to app internal storage (`/notes/{noteId}/original.pdf`)
+4. **Image Rendering**: Each page rendered to PNG with progress tracking
+5. **File Storage**: Images saved as `page_1.png`, `page_2.png`, etc.
+6. **Note Creation**: `NoteModel` created with PDF metadata
+7. **List Update**: Note added to user's note collection
+
+**📱 Usage & Display Flow:**
+8. **Note Opening**: User selects note from list → Editor opens
+9. **Image Loading**: Pre-rendered images loaded for canvas background
+10. **Error Detection**: Missing/corrupted image files detected automatically
+
+**🔧 Recovery & Management Flow:**
+11. **Recovery Modal**: User presented with clear options:
+    - **Re-render**: Generate new images from original PDF
+    - **Sketch Only**: Remove PDF background, keep user drawings
+    - **Delete Note**: Remove entire note and files
+12. **Re-rendering**: Original PDF → New images (preserves user sketches)
+13. **Progress Tracking**: Real-time progress with cancellation support
+14. **Fallback Handling**: PDF missing → Clear user notification
+15. **Note Deletion**: Complete directory removal + database cleanup
+
+#### **File Structure & Management**
+
+```
+/Application Documents/notes/
+├── {noteId}/
+│   ├── original.pdf          # Original PDF file (for re-rendering)
+│   ├── metadata.json         # PDF metadata (pages, dimensions, title)
+│   ├── page_1.png           # Pre-rendered page images
+│   ├── page_2.png
+│   ├── page_N.png
+│   └── sketches.json        # User drawing data (preserved during recovery)
+```
+
+#### **Service Architecture**
+
+**Centralized PDF Management**: All PDF operations handled by `PdfManager` service:
+- `importPdfNote()`: Complete import flow with progress tracking
+- `loadPageImage()`: Intelligent image loading with error detection
+- `recoverNote()`: Re-rendering from original PDF
+- `deleteNote()`: Clean removal of all associated files
+
+#### **Error Handling Strategy**
+
+**Recovery Scenarios Covered:**
+- **Image Corruption**: Re-render from original PDF
+- **PDF Missing**: Convert to sketch-only note or delete
+- **Storage Issues**: Clear error messages and fallback options
+- **Memory Limits**: Efficient rendering with memory monitoring
+- **User Cancellation**: Safe interruption of long operations
+
+#### **Performance Features**
+
+- **Progress Tracking**: Real-time feedback for long operations
+- **Memory Efficiency**: Stream-based processing for large PDFs
+- **Cancellation Support**: User can interrupt rendering
+- **Quality Settings**: Configurable rendering quality vs speed
+- **Background Processing**: Non-blocking UI during operations
 
 ## Testing Strategy
 
@@ -214,8 +268,12 @@ lib/features/[feature_name]/
 - ✅ PDF file system migration completed
 - ✅ Canvas stroke scaling issues resolved
 - ✅ Memory cache removal and error recovery system implemented
-- 🔄 TODO: Implement actual PDF re-rendering logic in recovery handlers
-- 🔄 TODO: Implement actual note deletion logic in recovery handlers
+- ✅ Widget hierarchy documentation added to all components
+- 🔄 **NEXT PRIORITY**: Service-centered PDF management system implementation
+  - 🔄 Create unified `PdfManager` service
+  - 🔄 Implement complete import → rendering → storage flow
+  - 🔄 Add progress tracking and cancellation support
+  - 🔄 Implement robust recovery and deletion logic
 - 🔄 Planning Isar database integration (next phase)
 - 🔄 State management migration to Provider (in progress)
 
@@ -223,9 +281,9 @@ lib/features/[feature_name]/
 
 This is a 4-person team project (2 designers, 2 developers) building a handwriting note app over 8 weeks. The codebase was recently refactored to improve modularity and maintainability.
 
-**Current Phase**: Just completed major PDF file system migration and canvas scaling optimization. Focus has shifted from complex automatic systems to simple, transparent, user-controlled solutions.
+**Current Phase**: Completed PDF file system migration and canvas scaling optimization. Currently implementing service-centered PDF management system with comprehensive workflow coverage and robust error handling.
 
-**Next Phase**: Database integration with Isar, state management standardization with Provider, and completion of recovery system implementation.
+**Next Phase**: Complete unified `PdfManager` service implementation, then move to database integration with Isar and state management standardization with Provider.
 
 ## Development Guidelines
 
