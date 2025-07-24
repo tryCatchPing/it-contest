@@ -17,6 +17,11 @@ import 'package:flutter/material.dart';
 /// 2. GestureDetector가 터치 이벤트 감지
 /// 3. onTap 콜백 함수 실행
 /// 4. context.push()를 통해 새 페이지로 이동 (go_router)
+///
+/// 위젯 계층 구조:
+/// MyApp
+/// ㄴ HomeScreen → (현 위젯) → 라우트 이동
+/// ㄴ NoteListScreen → (현 위젯) → 라우트 이동
 class NavigationCard extends StatelessWidget {
   const NavigationCard({
     required this.icon,

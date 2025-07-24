@@ -7,6 +7,11 @@ import '../notifiers/custom_scribble_notifier.dart';
 import '../widgets/note_editor_canvas.dart';
 import '../widgets/toolbar/note_editor_actions_bar.dart';
 
+/// 위젯 계층 구조:
+/// MyApp
+/// ㄴ HomeScreen
+///   ㄴ NavigationCard → 라우트 이동 (/notes) → NoteListScreen
+///     ㄴ NavigationCard → 라우트 이동 (/notes/:noteId/edit) → (현 위젯)
 class NoteEditorScreen extends StatefulWidget {
   const NoteEditorScreen({
     super.key,

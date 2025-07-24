@@ -15,6 +15,9 @@ import '../../../shared/widgets/navigation_card.dart';
 /// - 노트 목록으로 이동
 /// - PDF 파일 불러오기 (나중에 메인 기능으로 통합 예정)
 /// - 프로젝트 상태 정보
+///
+/// 위젯 계층 구조:
+/// MyApp (현 위젯)
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
