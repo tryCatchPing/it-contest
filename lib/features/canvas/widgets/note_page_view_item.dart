@@ -7,6 +7,13 @@ import '../constants/note_editor_constant.dart';
 import '../notifiers/custom_scribble_notifier.dart';
 import 'canvas_background_widget.dart';
 
+/// 위젯 계층 구조:
+/// MyApp
+/// ㄴ HomeScreen
+///   ㄴ NavigationCard → 라우트 이동 (/notes) → NoteListScreen
+///     ㄴ NavigationCard → 라우트 이동 (/notes/:noteId/edit) → NoteEditorScreen
+///       ㄴ NoteEditorCanvas
+///         ㄴ (현 위젯)
 class NotePageViewItem extends StatefulWidget {
   const NotePageViewItem({
     super.key,

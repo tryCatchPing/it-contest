@@ -10,6 +10,13 @@ import 'toolbar/note_editor_toolbar.dart';
 /// 다음을 포함합니다:
 /// - 다중 페이지 뷰 (PageView)
 /// - 그리기 도구 모음 (Toolbar)
+///
+/// 위젯 계층 구조:
+/// MyApp
+/// ㄴ HomeScreen
+///   ㄴ NavigationCard → 라우트 이동 (/notes) → NoteListScreen
+///     ㄴ NavigationCard → 라우트 이동 (/notes/:noteId/edit) → NoteEditorScreen
+///       ㄴ (현 위젯)
 class NoteEditorCanvas extends StatelessWidget {
   const NoteEditorCanvas({
     super.key,

@@ -7,15 +7,21 @@ import '../../../shared/widgets/navigation_card.dart';
 import '../data/fake_notes.dart';
 import '../models/note_model.dart';
 
+/// '/notes' route 에 대한 화면
+/// 1. 노트 목록
+/// 2. PDF 없는 빈 노트 생성
+/// 3. PDF 파일에서 노트 생성
+///
+/// 위젯 계층 구조:
+/// MyApp
+/// ㄴ HomeScreen
+///   ㄴ NavigationCard → 라우트 이동 (/notes) → (현 위젯)
 class NoteListScreen extends StatefulWidget {
   const NoteListScreen({super.key});
 
   @override
   State<NoteListScreen> createState() => _NoteListScreenState();
 }
-
-// TODO(xodnd): 더 좋은 모델 구조로 수정 필요
-// TODO(xodnd): 웹 지원 안해도 되는 구조로 수정
 
 class _NoteListScreenState extends State<NoteListScreen> {
   bool _isImporting = false;
@@ -31,7 +37,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
       final pdfNote = await PdfNoteService.createNoteFromPdf();
 
       if (pdfNote != null) {
-        // TODO: 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
+        // TODO(xodnd): 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
         fakeNotes.add(pdfNote);
 
         if (mounted) {
@@ -152,7 +158,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // 노트 카드들
+                      // 저장된 노트로 이동하는 카드들
                       for (var i = 0; i < fakeNotes.length; ++i) ...[
                         NavigationCard(
                           icon: Icons.brush,
@@ -161,7 +167,8 @@ class _NoteListScreenState extends State<NoteListScreen> {
                           color: const Color(0xFF6750A4),
                           onTap: () {
                             print('📝 노트 편집: ${fakeNotes[i].noteId}');
-                            // 🚀 타입 안전한 네비게이션 사용
+                            // canvas_routers.dart - /notes/:noteId/edit 이동
+                            // 노트 편집 화면 NoteEditorScreen 으로 이동
                             context.pushNamed(
                               AppRoutes.noteEditName,
                               pathParameters: {'noteId': fakeNotes[i].noteId},

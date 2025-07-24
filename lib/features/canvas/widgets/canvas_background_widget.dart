@@ -9,10 +9,19 @@ import 'file_recovery_modal.dart';
 /// 캔버스 배경을 표시하는 위젯 (모바일 앱 전용)
 ///
 /// 페이지 타입에 따라 빈 캔버스 또는 PDF 페이지를 표시합니다.
-/// 
+///
 /// 로딩 시스템:
 /// 1. 사전 렌더링된 로컬 이미지 파일 로드
 /// 2. 파일 손상 시 복구 모달 표시
+///
+/// 위젯 계층 구조:
+/// MyApp
+/// ㄴ HomeScreen
+///   ㄴ NavigationCard → 라우트 이동 (/notes) → NoteListScreen
+///     ㄴ NavigationCard → 라우트 이동 (/notes/:noteId/edit) → NoteEditorScreen
+///       ㄴ NoteEditorCanvas
+///         ㄴ NotePageViewItem
+///           ㄴ (현 위젯) / Scribble
 class CanvasBackgroundWidget extends StatefulWidget {
   const CanvasBackgroundWidget({
     required this.page,
@@ -39,6 +48,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   void initState() {
     super.initState();
     if (widget.page.hasPdfBackground) {
+      // 배경 이미지 (PDF) 로딩
       _loadBackgroundImage();
     }
   }
@@ -54,7 +64,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   }
 
   /// 배경 이미지를 로딩하는 메인 메서드
-  /// 
+  ///
   /// 사전 렌더링된 이미지 파일을 로드하고, 실패 시 복구 모달 표시
   Future<void> _loadBackgroundImage() async {
     if (!widget.page.hasPdfBackground) return;
@@ -72,6 +82,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         await _checkPreRenderedImage();
       }
 
+      // 사전 렌더링된 이미지 파일이 있으면 사용
       if (_preRenderedImageFile != null) {
         print('✅ 사전 렌더링된 이미지 사용: ${_preRenderedImageFile!.path}');
         setState(() {
@@ -80,10 +91,9 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         return;
       }
 
-      // 2. 파일이 없거나 손상된 경우 복구 모달 표시 
+      // 2. 파일이 없거나 손상된 경우 복구 모달 표시
       print('❌ 사전 렌더링된 이미지를 찾을 수 없음 - 복구 필요');
       throw Exception('사전 렌더링된 이미지 파일이 없거나 손상되었습니다.');
-
     } catch (e) {
       print('❌ 배경 이미지 로딩 실패: $e');
       if (mounted) {
@@ -128,7 +138,6 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
     }
   }
 
-
   /// 재시도 버튼 클릭 시 호출
   Future<void> _retryLoading() async {
     _hasCheckedPreRenderedImage = false;
@@ -140,7 +149,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   void _showRecoveryModal() {
     // 노트 제목을 추출 (기본값 설정)
     final noteTitle = widget.page.noteId.replaceAll('_', ' ');
-    
+
     FileRecoveryModal.show(
       context,
       noteTitle: noteTitle,
@@ -209,7 +218,6 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
     // 파일이 없으면 로딩 표시
     return _buildLoadingIndicator();
   }
-
 
   Widget _buildBlankBackground() {
     return Container(
