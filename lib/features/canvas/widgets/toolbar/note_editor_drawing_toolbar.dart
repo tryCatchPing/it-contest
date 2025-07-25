@@ -19,16 +19,18 @@ class NoteEditorDrawingToolbar extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        NoteEditorToolSelector(notifier: notifier),
+        Flexible(child: NoteEditorToolSelector(notifier: notifier)), // 🎯 Flexible 추가
         const VerticalDivider(width: 12),
-        NoteEditorColorSelector(notifier: notifier, toolMode: ToolMode.pen),
+        Flexible(child: NoteEditorColorSelector(notifier: notifier, toolMode: ToolMode.pen)), // 🎯 Flexible 추가
         const VerticalDivider(width: 12),
-        NoteEditorColorSelector(
-          notifier: notifier,
-          toolMode: ToolMode.highlighter,
+        Flexible( // 🎯 Flexible 추가
+          child: NoteEditorColorSelector(
+            notifier: notifier,
+            toolMode: ToolMode.highlighter,
+          ),
         ),
         const VerticalDivider(width: 12),
-        NoteEditorStrokeSelector(notifier: notifier),
+        Flexible(child: NoteEditorStrokeSelector(notifier: notifier)), // 🎯 Flexible 추가
       ],
     );
   }

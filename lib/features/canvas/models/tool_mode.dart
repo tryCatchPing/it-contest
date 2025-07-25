@@ -43,4 +43,12 @@ enum ToolMode {
 
   /// 각 도구가 그리기 모드인지 지우기 모드인지
   bool get isDrawingMode => this != ToolMode.eraser;
+
+  /// 이 도구 모드가 InteractiveViewer의 패닝을 비활성화해야 하는 상호작용 모드인지 여부
+  bool get disablesInteractiveViewerPan {
+    return this == ToolMode.pen ||
+           this == ToolMode.eraser ||
+           this == ToolMode.highlighter ||
+           this == ToolMode.linker;
+  }
 }

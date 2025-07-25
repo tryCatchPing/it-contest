@@ -68,23 +68,24 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     _pageController = PageController(initialPage: 0);
 
     // 모든 페이지의 notifier 초기화
+    _initializeNotifiers();
+  }
+
+  // 모든 페이지의 Notifier를 초기화하는 메서드
+  void _initializeNotifiers() {
     for (int i = 0; i < totalPages; i++) {
       final currentNotifier = CustomScribbleNotifier(
         maxHistoryLength: _maxHistoryLength,
-        // widths 는 자동 관리되긴 할 것임
-        // widths: const [1, 3, 5, 7],
-        // pressureCurve: Curves.easeInOut,
-        // 이후 페이지 넘버로 수정
         canvasIndex: i,
         toolMode: ToolMode.pen,
-        page: widget.note.pages[i], // Page 객체 전달로 자동 저장 활성화
+        page: widget.note.pages[i],
+        simulatePressure: _simulatePressure,
       );
       currentNotifier.setPen();
 
-      // 초기 로딩 시 모든 페이지 스케치 데이터 설정
       currentNotifier.setSketch(
         sketch: widget.note.pages[i].toSketch(),
-        addToUndoHistory: false, // 초기 설정이므로 undo 히스토리에 추가하지 않음
+        addToUndoHistory: false,
       );
       _scribbleNotifiers[i] = currentNotifier;
     }
@@ -119,6 +120,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   void _onPressureToggleChanged(bool value) {
     setState(() {
       _simulatePressure = value;
+      // 🎯 필압 토글 시 모든 notifier를 다시 초기화
+      _initializeNotifiers();
+      // 현재 페이지의 notifier로 다시 설정
+      notifier = _scribbleNotifiers[_currentPageIndex]!;
     });
   }
 
