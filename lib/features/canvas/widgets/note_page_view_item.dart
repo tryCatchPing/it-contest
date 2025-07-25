@@ -145,7 +145,7 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                       ClipRect(
                         child: Scribble(
                           notifier: widget.notifier,
-                          drawPen: !isLinkerMode, // 링커 모드가 아닐 때만 그리기 활성화
+                          drawPen: !widget.notifier.toolMode.isLinker,
                           simulatePressure: widget.simulatePressure,
                         ),
                       ),
