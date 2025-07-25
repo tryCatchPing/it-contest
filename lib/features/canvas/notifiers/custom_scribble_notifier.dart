@@ -14,13 +14,17 @@ class CustomScribbleNotifier extends ScribbleNotifier
     super.allowedPointersMode,
     super.maxHistoryLength,
     super.widths = const [1, 3, 5, 7],
-    super.pressureCurve = const _ConstantPressureCurve(),
+    required bool simulatePressure, // Add simulatePressure to constructor
     super.simplifier,
     super.simplificationTolerance,
     required this.canvasIndex,
     required this.toolMode,
     this.page,
-  });
+  }) : super(
+          pressureCurve: simulatePressure
+              ? const _DefaultPressureCurve() // Use default pressure curve if simulating
+              : const _ConstantPressureCurve(), // Use constant pressure curve if not simulating
+        );
 
   final int canvasIndex;
   @override
@@ -43,6 +47,7 @@ class CustomScribbleNotifier extends ScribbleNotifier
   // 🔧 선 굵기 조정 방지: onPointerDown 오버라이드
   @override
   void onPointerDown(PointerDownEvent event) {
+    print('CustomScribbleNotifier: onPointerDown called. ToolMode: $toolMode, PointerKind: ${event.kind}, SupportedPointers: ${value.supportedPointerKinds}'); // DEBUG
     if (!value.supportedPointerKinds.contains(event.kind)) return;
     var s = value;
 
@@ -74,6 +79,7 @@ class CustomScribbleNotifier extends ScribbleNotifier
   // 🔧 포인트 간격 조정: onPointerUpdate 오버라이드
   @override
   void onPointerUpdate(PointerMoveEvent event) {
+    print('CustomScribbleNotifier: onPointerUpdate called. ToolMode: $toolMode, PointerKind: ${event.kind}'); // DEBUG
     if (!value.supportedPointerKinds.contains(event.kind)) return;
     if (!value.active) {
       temporaryValue = value.copyWith(pointerPosition: null);
@@ -205,6 +211,14 @@ class CustomScribbleNotifier extends ScribbleNotifier
     }
     return s;
   }
+}
+
+// 🎯 추가: 실제 필압을 반영하는 PressureCurve
+class _DefaultPressureCurve extends Curve {
+  const _DefaultPressureCurve();
+
+  @override
+  double transform(double t) => t; // 입력 t를 그대로 반환하여 필압 반영
 }
 
 class _ConstantPressureCurve extends Curve {

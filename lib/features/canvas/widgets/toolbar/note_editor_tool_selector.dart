@@ -84,6 +84,8 @@ class NoteEditorToolSelector extends StatelessWidget {
                   notifier.setLinker();
                   break;
               }
+              // 🎯 추가된 로그: 버튼 클릭 후 notifier의 toolMode 확인
+              print('After click, notifier.toolMode: ${notifier.toolMode}');
             },
             child: Text(tooltip),
           ),
