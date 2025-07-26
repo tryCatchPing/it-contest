@@ -106,6 +106,15 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
   Widget build(BuildContext context) {
     final drawingWidth = widget.notifier.page!.drawingAreaWidth;
     final drawingHeight = widget.notifier.page!.drawingAreaHeight;
+    final isLinkerMode = widget.notifier.toolMode.isLinker;
+
+    // -- NotePageViewItem의 build 메서드 내부--
+    if (!isLinkerMode) {
+      print('렌더링: Scribble 위젯');
+    }
+    if (isLinkerMode) {
+      print('렌더링: LinkerGestureLayer (CustomPaint + GestureDetector)');
+    }
 
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -133,42 +142,53 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                 child: SizedBox(
                   width: drawingWidth,
                   height: drawingHeight,
-                  child: Stack(
-                    children: [
-                      // 배경 레이어
-                      CanvasBackgroundWidget(
-                        page: widget.notifier.page!,
-                        width: drawingWidth,
-                        height: drawingHeight,
-                      ),
-                      // 필기 레이어 (링커 모드가 아닐 때만 활성화)
-                      ClipRect(
-                        child: Scribble(
-                          notifier: widget.notifier,
-                          drawPen: !widget.notifier.toolMode.isLinker,
-                          simulatePressure: widget.simulatePressure,
-                        ),
-                      ),
-                      // 링커 제스처 및 그리기 레이어 (항상 존재하며, 내부적으로 toolMode에 따라 드래그/탭 처리)
-                      LinkerGestureLayer(
-                        toolMode: widget.notifier.toolMode, // toolMode를 전달하여 내부적으로 제스처 처리 결정
-                        onLinkerRectanglesChanged: (rects) {
-                          setState(() {
-                            _currentLinkerRectangles = rects;
-                          });
-                        },
-                        onLinkerTapped: (rect) {
-                          _showLinkerOptions(context, rect);
-                        },
-                        minLinkerRectangleSize: NoteEditorConstants.canvasWidth,
-                        linkerFillColor: Colors.pinkAccent,
-                        linkerBorderColor: Colors.pinkAccent,
-                        linkerBorderWidth: 2.0,
-                        currentLinkerFillColor: Colors.green,
-                        currentLinkerBorderColor: Colors.green,
-                        currentLinkerBorderWidth: 2.0,
-                      ),
-                    ],
+                  child: ValueListenableBuilder<ScribbleState>(
+                    valueListenable: widget.notifier,
+                    builder: (context, scribbleState, child) {
+                      final currentToolMode = widget.notifier.toolMode; // notifier에서 직접 toolMode 가져오기
+                      return Stack(
+                        children: [
+                          // 배경 레이어
+                          CanvasBackgroundWidget(
+                            page: widget.notifier.page!,
+                            width: drawingWidth,
+                            height: drawingHeight,
+                          ),
+                          // 필기 레이어 (링커 모드가 아닐 때만 활성화)
+                          IgnorePointer(
+                            ignoring: currentToolMode.isLinker,
+                            child: ClipRect(
+                              child: Scribble(
+                                notifier: widget.notifier,
+                                drawPen: !currentToolMode.isLinker,
+                                simulatePressure: widget.simulatePressure,
+                              ),
+                            ),
+                          ),
+                          // 링커 제스처 및 그리기 레이어 (항상 존재하며, 내부적으로 toolMode에 따라 드래그/탭 처리)
+                          Positioned.fill(
+                            child: LinkerGestureLayer(
+                              toolMode: currentToolMode, // toolMode를 전달하여 내부적으로 제스처 처리 결정
+                              onLinkerRectanglesChanged: (rects) {
+                                setState(() {
+                                  _currentLinkerRectangles = rects;
+                                });
+                              },
+                              onLinkerTapped: (rect) {
+                                _showLinkerOptions(context, rect);
+                              },
+                              minLinkerRectangleSize: NoteEditorConstants.minLinkerRectangleSize,
+                              linkerFillColor: Colors.pinkAccent,
+                              linkerBorderColor: Colors.pinkAccent,
+                              linkerBorderWidth: 2.0,
+                              currentLinkerFillColor: Colors.green,
+                              currentLinkerBorderColor: Colors.green,
+                              currentLinkerBorderWidth: 2.0,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),

@@ -46,9 +46,6 @@ class _LinkerGestureLayerState extends State<LinkerGestureLayer> {
 
   /// 드래그 시작 시 호출
   void _onDragStart(DragStartDetails details) {
-    print('LinkerGestureLayer: _onDragStart called. Current toolMode: ${widget.toolMode}'); // DEBUG
-    // 링커 모드일 때만 드래그 시작
-    if (widget.toolMode != ToolMode.linker) return;
     setState(() {
       _currentDragStart = details.localPosition;
       _currentDragEnd = details.localPosition;
@@ -57,9 +54,6 @@ class _LinkerGestureLayerState extends State<LinkerGestureLayer> {
 
   /// 드래그 중 호출
   void _onDragUpdate(DragUpdateDetails details) {
-    print('LinkerGestureLayer: _onDragUpdate called. Current toolMode: ${widget.toolMode}'); // DEBUG
-    // 링커 모드일 때만 드래그 업데이트
-    if (widget.toolMode != ToolMode.linker) return;
     setState(() {
       _currentDragEnd = details.localPosition;
     });
@@ -67,9 +61,6 @@ class _LinkerGestureLayerState extends State<LinkerGestureLayer> {
 
   /// 드래그 종료 시 호출
   void _onDragEnd(DragEndDetails details) {
-    print('LinkerGestureLayer: _onDragEnd called. Current toolMode: ${widget.toolMode}'); // DEBUG
-    // 링커 모드일 때만 드래그 종료
-    if (widget.toolMode != ToolMode.linker) return;
     setState(() {
       if (_currentDragStart != null && _currentDragEnd != null) {
         final rect = Rect.fromPoints(_currentDragStart!, _currentDragEnd!);
@@ -85,10 +76,6 @@ class _LinkerGestureLayerState extends State<LinkerGestureLayer> {
 
   /// 탭 업(손가락 떼는) 시 호출
   void _onTapUp(TapUpDetails details) {
-    print('LinkerGestureLayer: _onTapUp called. Current toolMode: ${widget.toolMode}'); // DEBUG
-    // 링커 모드일 때만 탭 처리 활성화
-    if (widget.toolMode != ToolMode.linker) return;
-
     final tapPosition = details.localPosition;
     for (final rect in _linkerRectangles) {
       if (rect.contains(tapPosition)) {
@@ -100,15 +87,19 @@ class _LinkerGestureLayerState extends State<LinkerGestureLayer> {
 
   @override
   Widget build(BuildContext context) {
-    // GestureDetector는 항상 존재하여 탭 이벤트를 감지하고,
-    // 드래그 이벤트는 toolMode에 따라 내부적으로 처리 여부 결정
+    // toolMode가 linker일 때만 GestureDetector를 활성화
+    if (widget.toolMode != ToolMode.linker) {
+      return Container(); // 링커 모드가 아니면 아무것도 렌더링하지 않음
+    }
+
     return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onPanStart: widget.toolMode == ToolMode.linker ? _onDragStart : null,
-      onPanUpdate: widget.toolMode == ToolMode.linker ? _onDragUpdate : null,
-      onPanEnd: widget.toolMode == ToolMode.linker ? _onDragEnd : null,
+      behavior: HitTestBehavior.opaque,
+      onPanStart: _onDragStart,
+      onPanUpdate: _onDragUpdate,
+      onPanEnd: _onDragEnd,
       onTapUp: _onTapUp,
       child: CustomPaint(
+        size: Size.infinite, // CustomPaint가 전체 영역을 차지하도록 설정
         painter: RectangleLinkerPainter(
           currentDragStart: _currentDragStart,
           currentDragEnd: _currentDragEnd,
