@@ -154,6 +154,16 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                             width: drawingWidth,
                             height: drawingHeight,
                           ),
+                          // 링커 직사각형을 항상 그리는 레이어 추가
+                          CustomPaint(
+                            painter: _LinkerRectanglePainter(
+                              _currentLinkerRectangles,
+                              fillColor: Colors.pinkAccent.withOpacity(0.3), // LinkerGestureLayer의 linkerFillColor와 동일하게
+                              borderColor: Colors.pinkAccent, // LinkerGestureLayer의 linkerBorderColor와 동일하게
+                              borderWidth: 2.0, // LinkerGestureLayer의 linkerBorderWidth와 동일하게
+                            ),
+                            child: Container(), // CustomPaint needs a child or size
+                          ),
                           // 필기 레이어 (링커 모드가 아닐 때만 활성화)
                           IgnorePointer(
                             ignoring: currentToolMode.isLinker,
@@ -197,5 +207,45 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
         ),
       ),
     );
+  }
+}
+
+/// 링커 직사각형을 그리는 CustomPainter
+class _LinkerRectanglePainter extends CustomPainter {
+  final List<Rect> rectangles;
+  final Color fillColor;
+  final Color borderColor;
+  final double borderWidth;
+
+  _LinkerRectanglePainter(
+    this.rectangles, {
+    required this.fillColor,
+    required this.borderColor,
+    required this.borderWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fillPaint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..strokeWidth = borderWidth
+      ..style = PaintingStyle.stroke;
+
+    for (final rect in rectangles) {
+      canvas.drawRect(rect, fillPaint);
+      canvas.drawRect(rect, borderPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _LinkerRectanglePainter oldDelegate) {
+    return oldDelegate.rectangles != rectangles ||
+        oldDelegate.fillColor != fillColor ||
+        oldDelegate.borderColor != borderColor ||
+        oldDelegate.borderWidth != borderWidth;
   }
 }
