@@ -1,5 +1,6 @@
 import 'dart:io';
 
+
 import 'package:flutter/material.dart';
 
 import '../../../shared/services/file_storage_service.dart';
@@ -23,6 +24,11 @@ import 'file_recovery_modal.dart';
 ///         ㄴ NotePageViewItem
 ///           ㄴ (현 위젯) / Scribble
 class CanvasBackgroundWidget extends StatefulWidget {
+  /// [CanvasBackgroundWidget]의 생성자.
+  ///
+  /// [page]는 현재 노트 페이지 모델입니다.
+  /// [width]는 캔버스 너비입니다.
+  /// [height]는 캔버스 높이입니다.
   const CanvasBackgroundWidget({
     required this.page,
     required this.width,
@@ -30,8 +36,13 @@ class CanvasBackgroundWidget extends StatefulWidget {
     super.key,
   });
 
+  /// 현재 노트 페이지 모델.
   final NotePageModel page;
+
+  /// 캔버스 너비.
   final double width;
+
+  /// 캔버스 높이.
   final double height;
 
   @override
@@ -67,7 +78,9 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   ///
   /// 사전 렌더링된 이미지 파일을 로드하고, 실패 시 복구 모달 표시
   Future<void> _loadBackgroundImage() async {
-    if (!widget.page.hasPdfBackground) return;
+    if (!widget.page.hasPdfBackground) {
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -75,7 +88,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
     });
 
     try {
-      print('🎯 배경 이미지 로딩 시작: ${widget.page.pageId}');
+      debugPrint('🎯 배경 이미지 로딩 시작: ${widget.page.pageId}');
 
       // 1. 사전 렌더링된 로컬 이미지 확인
       if (!_hasCheckedPreRenderedImage) {
@@ -84,7 +97,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
 
       // 사전 렌더링된 이미지 파일이 있으면 사용
       if (_preRenderedImageFile != null) {
-        print('✅ 사전 렌더링된 이미지 사용: ${_preRenderedImageFile!.path}');
+        debugPrint('✅ 사전 렌더링된 이미지 사용: ${_preRenderedImageFile!.path}');
         setState(() {
           _isLoading = false;
         });
@@ -92,10 +105,10 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
       }
 
       // 2. 파일이 없거나 손상된 경우 복구 모달 표시
-      print('❌ 사전 렌더링된 이미지를 찾을 수 없음 - 복구 필요');
+      debugPrint('❌ 사전 렌더링된 이미지를 찾을 수 없음 - 복구 필요');
       throw Exception('사전 렌더링된 이미지 파일이 없거나 손상되었습니다.');
     } catch (e) {
-      print('❌ 배경 이미지 로딩 실패: $e');
+      debugPrint('❌ 배경 이미지 로딩 실패: $e');
       // 해당 위젯이 현재 위젯트리에 마운트 되어있는가?
       if (mounted) {
         setState(() {
@@ -136,7 +149,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         }
       }
     } catch (e) {
-      print('⚠️ 사전 렌더링된 이미지 확인 실패: $e');
+      debugPrint('⚠️ 사전 렌더링된 이미지 확인 실패: $e');
     }
   }
 
@@ -162,16 +175,16 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
 
   /// 재렌더링 처리
   Future<void> _handleRerender() async {
-    // TODO: PDF 재렌더링 로직 구현
+    // TODO(Jidou): PDF 재렌더링 로직 구현
     // 현재는 간단히 재시도만 수행
-    print('🔄 재렌더링 시작...');
+    debugPrint('🔄 재렌더링 시작...');
     await _retryLoading();
   }
 
   /// 노트 삭제 처리
   void _handleDelete() {
-    // TODO: 노트 삭제 로직 구현
-    print('🗑️ 노트 삭제 요청...');
+    // TODO(Jidou): 노트 삭제 로직 구현
+    debugPrint('🗑️ 노트 삭제 요청...');
     // Navigator를 통해 이전 화면으로 돌아가기
     Navigator.of(context).pop();
   }
@@ -210,7 +223,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         width: widget.width,
         height: widget.height,
         errorBuilder: (context, error, stackTrace) {
-          print('⚠️ 사전 렌더링된 이미지 로딩 오류: $error');
+          debugPrint('⚠️ 사전 렌더링된 이미지 로딩 오류: $error');
           // 이미지 파일 오류 시 에러 표시
           return _buildErrorIndicator();
         },

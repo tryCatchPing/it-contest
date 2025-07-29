@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,6 +20,7 @@ import '../../../shared/widgets/navigation_card.dart';
 /// 위젯 계층 구조:
 /// MyApp (현 위젯)
 class HomeScreen extends StatelessWidget {
+  /// [HomeScreen]의 생성자.
   const HomeScreen({super.key});
 
   @override
@@ -67,7 +69,7 @@ class HomeScreen extends StatelessWidget {
                   subtitle: '저장된 스케치 파일들을 확인하고 편집하세요',
                   color: const Color(0xFF4CAF50),
                   onTap: () {
-                    print('📝 노트 목록 페이지로 이동 중...');
+                    debugPrint('📝 노트 목록 페이지로 이동 중...');
                     context.pushNamed(AppRoutes.noteListName);
                   },
                 ),

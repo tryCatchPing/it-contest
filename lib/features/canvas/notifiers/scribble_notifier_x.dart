@@ -3,10 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
+/// [ScribbleNotifier]에 대한 확장 메서드를 제공합니다.
 extension ScribbleNotifierX on ScribbleNotifier {
+  /// 현재 스케치를 이미지로 렌더링하여 다이얼로그로 표시합니다.
+  ///
+  /// [context]는 빌드 컨텍스트입니다.
   void showImage(BuildContext context) async {
     final image = renderImage();
-    if (!context.mounted) return;
+    if (!context.mounted) {
+      return;
+    }
 
     showDialog<void>(
       context: context,
@@ -30,6 +36,9 @@ extension ScribbleNotifierX on ScribbleNotifier {
     );
   }
 
+  /// 현재 스케치를 JSON 형식으로 변환하여 다이얼로그로 표시합니다.
+  ///
+  /// [context]는 빌드 컨텍스트입니다.
   void showJson(BuildContext context) {
     showDialog<void>(
       context: context,

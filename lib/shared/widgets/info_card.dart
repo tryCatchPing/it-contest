@@ -5,12 +5,28 @@ import 'package:flutter/material.dart';
 /// 중요한 정보나 상태를 표시하는 카드 위젯입니다.
 /// 색상과 아이콘을 커스터마이징할 수 있습니다.
 class InfoCard extends StatelessWidget {
+  /// 카드에 표시될 메시지.
   final String message;
+
+  /// 카드에 표시될 아이콘.
   final IconData icon;
+
+  /// 카드의 주 색상.
   final Color color;
+
+  /// 카드의 배경 색상. (선택 사항)
   final Color? backgroundColor;
+
+  /// 카드의 테두리 색상. (선택 사항)
   final Color? borderColor;
 
+  /// [InfoCard]의 기본 생성자.
+  ///
+  /// [message]는 카드에 표시될 메시지입니다.
+  /// [icon]은 카드에 표시될 아이콘입니다 (기본값: [Icons.info_outline]).
+  /// [color]는 카드의 주 색상입니다 (기본값: [Colors.amber]).
+  /// [backgroundColor]는 카드의 배경 색상입니다.
+  /// [borderColor]는 카드의 테두리 색상입니다.
   const InfoCard({
     super.key,
     required this.message,
@@ -20,7 +36,10 @@ class InfoCard extends StatelessWidget {
     this.borderColor,
   });
 
-  /// 경고용 정보 카드 (노란색)
+  /// 경고용 정보 카드 (노란색)를 생성하는 팩토리 생성자.
+  ///
+  /// [message]는 카드에 표시될 메시지입니다.
+  /// [icon]은 카드에 표시될 아이콘입니다 (기본값: [Icons.warning_outlined]).
   const InfoCard.warning({
     super.key,
     required this.message,
@@ -29,7 +48,10 @@ class InfoCard extends StatelessWidget {
        backgroundColor = null,
        borderColor = null;
 
-  /// 성공용 정보 카드 (초록색)
+  /// 성공용 정보 카드 (초록색)를 생성하는 팩토리 생성자.
+  ///
+  /// [message]는 카드에 표시될 메시지입니다.
+  /// [icon]은 카드에 표시될 아이콘입니다 (기본값: [Icons.check_circle_outline]).
   const InfoCard.success({
     super.key,
     required this.message,
@@ -38,7 +60,10 @@ class InfoCard extends StatelessWidget {
        backgroundColor = null,
        borderColor = null;
 
-  /// 에러용 정보 카드 (빨간색)
+  /// 에러용 정보 카드 (빨간색)를 생성하는 팩토리 생성자.
+  ///
+  /// [message]는 카드에 표시될 메시지입니다.
+  /// [icon]은 카드에 표시될 아이콘입니다 (기본값: [Icons.error_outline]).
   const InfoCard.error({
     super.key,
     required this.message,
@@ -49,10 +74,11 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBackgroundColor =
-        backgroundColor ?? color.withValues(alpha: 0.08);
-    final effectiveBorderColor = borderColor ?? color.withValues(alpha: 0.2);
-    final effectiveTextColor = color.withValues(alpha: 0.85);
+    final effectiveBackgroundColor = backgroundColor ??
+        color.withAlpha((255 * 0.08).round());
+    final effectiveBorderColor = borderColor ??
+        color.withAlpha((255 * 0.2).round());
+    final effectiveTextColor = color.withAlpha((255 * 0.85).round());
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

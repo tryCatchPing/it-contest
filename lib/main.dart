@@ -19,7 +19,9 @@ final _router = GoRouter(
   debugLogDiagnostics: true,
 );
 
+/// 애플리케이션의 메인 위젯입니다.
 class MyApp extends StatelessWidget {
+  /// [MyApp]의 생성자.
   const MyApp({super.key});
 
   @override

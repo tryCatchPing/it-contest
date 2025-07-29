@@ -1,19 +1,20 @@
 import '../models/note_model.dart';
 import '../models/note_page_model.dart';
 
+/// 가짜 노트 데이터 목록입니다. 시연 및 테스트 목적으로 사용됩니다.
 final List<NoteModel> fakeNotes = [
   fakeBlankNote,
   fakePdfNote,
 ];
 
-// 빈 노트 예시
+/// 빈 노트 예시 데이터입니다.
 final fakeBlankNote = NoteModel.blank(
   noteId: 'blank_note_1',
   title: '빈 노트 예시',
   initialPageCount: 3,
 );
 
-// PDF 기반 노트 예시 (실제 PDF 없이 시뮬레이션)
+/// PDF 기반 노트 예시 데이터입니다. (실제 PDF 없이 시뮬레이션)
 final fakePdfNote = NoteModel.fromPdf(
   noteId: 'pdf_note_1',
   title: 'PDF 기반 노트 예시',
@@ -35,7 +36,7 @@ final fakePdfNote = NoteModel.fromPdf(
       jsonData: '''
 {"lines":[{"points":[{"x":100,"y":100,"pressure":0.5},{"x":200,"y":150,"pressure":0.5},{"x":300,"y":100,"pressure":0.5}],"color":4294901760,"width":3}]}
 ''', // PDF 위에 그어진 스케치 예시
-      pdfPath: '/fake/sample.pdf', // 시뮬레이션용 가짜 경로  
+      pdfPath: '/fake/sample.pdf', // 시뮬레이션용 가짜 경로
       pdfPageNumber: 2,
       pdfWidth: 595.0,
       pdfHeight: 842.0,
@@ -45,7 +46,7 @@ final fakePdfNote = NoteModel.fromPdf(
   totalPages: 2,
 );
 
-// 기존 테스트용 노트 (호환성 유지)
+/// 기존 테스트용 노트 데이터입니다. (호환성 유지)
 final fakeNote = NoteModel(
   noteId: 'note1',
   title: 'Note 1',

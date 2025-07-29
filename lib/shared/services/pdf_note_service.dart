@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:pdfx/pdfx.dart';
 
 import '../../features/notes/models/note_model.dart';
@@ -29,16 +30,16 @@ class PdfNoteService {
       // 1. PDF 파일 선택
       final sourcePdfPath = await FilePickerService.pickPdfFile();
       if (sourcePdfPath == null) {
-        print('ℹ️ PDF 파일 선택이 취소되었습니다.');
+        debugPrint('ℹ️ PDF 파일 선택이 취소되었습니다.');
         return null;
       }
 
       // 2. PDF 문서 열기 (원본에서 페이지 정보 수집)
       final document = await PdfDocument.openFile(sourcePdfPath);
-      print('✅ PDF 문서 열기 성공: $sourcePdfPath');
+      debugPrint('✅ PDF 문서 열기 성공: $sourcePdfPath');
 
       final totalPages = document.pagesCount;
-      print('📄 PDF 총 페이지 수: $totalPages');
+      debugPrint('📄 PDF 총 페이지 수: $totalPages');
 
       if (totalPages == 0) {
         await document.close();
@@ -52,8 +53,8 @@ class PdfNoteService {
           _extractTitleFromPath(sourcePdfPath) ??
           'PDF 노트 ${DateTime.now().toString().substring(0, 16)}';
 
-      print('🎯 노트 ID 생성: $noteId');
-      print('📝 노트 제목: $title');
+      debugPrint('🎯 노트 ID 생성: $noteId');
+      debugPrint('📝 노트 제목: $title');
 
       // 4. PDF 파일을 앱 내부로 복사
       final internalPdfPath = await FileStorageService.copyPdfToAppStorage(
@@ -64,20 +65,20 @@ class PdfNoteService {
       // 5. 이미지 사전 렌더링 (선택적)
       List<String> renderedImagePaths = [];
       if (preRenderImages) {
-        print('🎨 이미지 사전 렌더링 시작...');
+        debugPrint('🎨 이미지 사전 렌더링 시작...');
         renderedImagePaths = await FileStorageService.preRenderPdfPages(
           pdfPath: internalPdfPath,
           noteId: noteId,
           scaleFactor: 3.0,
         );
-        print('✅ 이미지 사전 렌더링 완료: ${renderedImagePaths.length}개');
+        debugPrint('✅ 이미지 사전 렌더링 완료: ${renderedImagePaths.length}개');
       }
 
       // 6. PDF 페이지별 NotePageModel 생성
       final pages = <NotePageModel>[];
 
       for (int i = 1; i <= totalPages; i++) {
-        print('📖 페이지 $i 모델 생성 중...');
+        debugPrint('📖 페이지 $i 모델 생성 중...');
 
         final pdfPage = await document.getPage(i);
         final pageId = '${noteId}_page_$i';
@@ -115,11 +116,11 @@ class PdfNoteService {
         totalPages: totalPages,
       );
 
-      print('✅ PDF 기반 노트 생성 완료: $title ($totalPages 페이지)');
-      print('📁 내부 PDF 경로: $internalPdfPath');
+      debugPrint('✅ PDF 기반 노트 생성 완료: $title ($totalPages 페이지)');
+      debugPrint('📁 내부 PDF 경로: $internalPdfPath');
       return note;
     } catch (e) {
-      print('❌ PDF 노트 생성 중 오류 발생: $e');
+      debugPrint('❌ PDF 노트 생성 중 오류 발생: $e');
       return null;
     }
   }
@@ -139,14 +140,14 @@ class PdfNoteService {
   /// [noteId]: 삭제할 노트의 고유 ID
   static Future<void> deleteNoteWithFiles(String noteId) async {
     try {
-      print('🗑️ 노트 및 관련 파일 삭제 시작: $noteId');
+      debugPrint('🗑️ 노트 및 관련 파일 삭제 시작: $noteId');
 
       // FileStorageService를 통해 파일 삭제
       await FileStorageService.deleteNoteFiles(noteId);
 
-      print('✅ 노트 파일 삭제 완료: $noteId');
+      debugPrint('✅ 노트 파일 삭제 완료: $noteId');
     } catch (e) {
-      print('❌ 노트 파일 삭제 실패: $e');
+      debugPrint('❌ 노트 파일 삭제 실패: $e');
       rethrow;
     }
   }

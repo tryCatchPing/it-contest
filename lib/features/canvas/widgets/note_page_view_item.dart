@@ -1,23 +1,40 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 import '../constants/note_editor_constant.dart'; // NoteEditorConstants 정의 필요
-import '../models/tool_mode.dart'; // ToolMode 정의 필요
 import '../notifiers/custom_scribble_notifier.dart'; // CustomScribbleNotifier 정의 필요
 import 'canvas_background_widget.dart'; // CanvasBackgroundWidget 정의 필요
 import 'linker_gesture_layer.dart';
 // import 'rectangle_linker_painter.dart'; // RectangleLinkerPainter는 LinkerGestureLayer 내부에서 사용되므로 직접 import는 불필요할 수 있음
 
+/// Note 편집 화면의 단일 페이지 뷰 아이템입니다.
+/// [pageController], [totalPages], [notifier], [transformationController],
+/// [simulatePressure]를 통해 페이지, 필기, 확대/축소, 필압 시뮬레이션 등을
+/// 제어합니다.
 class NotePageViewItem extends StatefulWidget {
+  /// 페이지 뷰를 제어하는 컨트롤러.
   final PageController pageController;
+
+  /// 전체 페이지 수.
   final int totalPages;
+
+  /// 스케치 상태를 관리하는 Notifier.
   final CustomScribbleNotifier notifier;
+
+  /// 확대/축소 상태를 관리하는 컨트롤러.
   final TransformationController transformationController;
+
+  /// 필압 시뮬레이션 여부.
   final bool simulatePressure;
 
-  /// Note 편집 화면의 단일 페이지 뷰 아이템입니다.
-  /// [pageController], [totalPages], [notifier], [transformationController], [simulatePressure]를 통해
-  /// 페이지, 필기, 확대/축소, 필압 시뮬레이션 등을 제어합니다.
+  /// [NotePageViewItem]의 생성자.
+  ///
+  /// [pageController]는 페이지 뷰를 제어하는 컨트롤러입니다.
+  /// [totalPages]는 전체 페이지 수입니다.
+  /// [notifier]는 스케치 상태를 관리하는 Notifier입니다.
+  /// [transformationController]는 확대/축소 상태를 관리하는 컨트롤러입니다.
+  /// [simulatePressure]는 필압 시뮬레이션 여부입니다.
   const NotePageViewItem({
     super.key,
     required this.pageController,
@@ -50,26 +67,35 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
     super.dispose();
   }
 
-  /// 🎯 포인트 간격 조정을 위한 스케일 동기화
+  /// 포인트 간격 조정을 위한 스케일 동기화.
   void _onScaleChanged() {
     // 스케일 변경 감지 및 디바운스 로직 (구현 생략)
-    final currentScale = widget.transformationController.value.getMaxScaleOnAxis();
-    if ((currentScale - _lastScale).abs() < 0.01) return;
+    final currentScale = 
+        widget.transformationController.value.getMaxScaleOnAxis();
+    if ((currentScale - _lastScale).abs() < 0.01) {
+      return;
+    }
     _lastScale = currentScale;
 
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 8), _updateScale);
   }
 
+  /// 스케일을 업데이트합니다.
   void _updateScale() {
     // 실제 스케일 동기화 로직 (구현 생략)
-    widget.notifier.syncWithViewerScale(widget.transformationController.value.getMaxScaleOnAxis());
+    widget.notifier.syncWithViewerScale(
+      widget.transformationController.value.getMaxScaleOnAxis(),
+    );
   }
 
-  /// 링커 옵션 다이얼로그 표시
+  /// 링커 옵션 다이얼로그를 표시합니다.
+  ///
+  /// [context]는 빌드 컨텍스트입니다.
+  /// [tappedRect]는 탭된 링커의 사각형 정보입니다.
   void _showLinkerOptions(BuildContext context, Rect tappedRect) {
     // 바텀 시트 표시 로직 (구현 생략)
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext bc) {
         return SafeArea(
@@ -110,10 +136,11 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
 
     // -- NotePageViewItem의 build 메서드 내부--
     if (!isLinkerMode) {
-      print('렌더링: Scribble 위젯');
+      debugPrint('렌더링: Scribble 위젯');
     }
     if (isLinkerMode) {
-      print('렌더링: LinkerGestureLayer (CustomPaint + GestureDetector)');
+      debugPrint(
+        '렌더링: LinkerGestureLayer (CustomPaint + GestureDetector)');
     }
 
     return Padding(
@@ -158,11 +185,14 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                           CustomPaint(
                             painter: _LinkerRectanglePainter(
                               _currentLinkerRectangles,
-                              fillColor: Colors.pinkAccent.withOpacity(0.3), // LinkerGestureLayer의 linkerFillColor와 동일하게
+                              fillColor: Colors.pinkAccent.withAlpha(
+                                (255 * 0.3).round(),
+                              ), // LinkerGestureLayer의 linkerFillColor와 동일하게
                               borderColor: Colors.pinkAccent, // LinkerGestureLayer의 linkerBorderColor와 동일하게
                               borderWidth: 2.0, // LinkerGestureLayer의 linkerBorderWidth와 동일하게
                             ),
-                            child: Container(), // CustomPaint needs a child or size
+                            child:
+                                Container(), // CustomPaint needs a child or size
                           ),
                           // 필기 레이어 (링커 모드가 아닐 때만 활성화)
                           IgnorePointer(
@@ -212,11 +242,24 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
 
 /// 링커 직사각형을 그리는 CustomPainter
 class _LinkerRectanglePainter extends CustomPainter {
+  /// [rectangles]는 그릴 사각형 목록입니다.
   final List<Rect> rectangles;
+
+  /// 채우기 색상.
   final Color fillColor;
+
+  /// 테두리 색상.
   final Color borderColor;
+
+  /// 테두리 두께.
   final double borderWidth;
 
+  /// [_LinkerRectanglePainter]의 생성자.
+  ///
+  /// [rectangles]는 그릴 사각형 목록입니다.
+  /// [fillColor]는 채우기 색상입니다.
+  /// [borderColor]는 테두리 색상입니다.
+  /// [borderWidth]는 테두리 두께입니다.
   _LinkerRectanglePainter(
     this.rectangles, {
     required this.fillColor,

@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 
 /// 📁 파일 선택 서비스 (모바일 앱 전용)
 ///
@@ -23,20 +24,20 @@ class FilePickerService {
 
       if (result != null) {
         final file = result.files.single;
-        
+
         if (file.path != null) {
-          print('✅ PDF 파일 선택됨: ${file.path}');
+          debugPrint('✅ PDF 파일 선택됨: ${file.path}');
           return file.path!;
         } else {
-          print('❌ 파일 경로를 가져올 수 없습니다.');
+          debugPrint('❌ 파일 경로를 가져올 수 없습니다.');
           return null;
         }
       } else {
-        print('ℹ️ PDF 파일 선택 취소됨.');
+        debugPrint('ℹ️ PDF 파일 선택 취소됨.');
         return null;
       }
     } catch (e) {
-      print('❌ 파일 선택 중 오류 발생: $e');
+      debugPrint('❌ 파일 선택 중 오류 발생: $e');
       return null;
     }
   }

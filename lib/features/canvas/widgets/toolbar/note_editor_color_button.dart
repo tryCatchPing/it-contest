@@ -4,6 +4,14 @@ import 'package:flutter/material.dart';
 ///
 /// 캔버스에서 사용할 색상 버튼을 생성합니다.
 class NoteEditorColorButton extends StatelessWidget {
+  /// [NoteEditorColorButton]의 생성자.
+  ///
+  /// [color]는 버튼의 배경 색상입니다.
+  /// [isActive]는 버튼이 활성화 상태인지 여부입니다.
+  /// [onPressed]는 버튼 클릭 시 호출될 콜백 함수입니다.
+  /// [outlineColor]는 버튼의 테두리 색상입니다. (선택 사항)
+  /// [child]는 버튼 내부에 표시될 위젯입니다. (선택 사항)
+  /// [tooltip]은 버튼에 대한 툴팁 텍스트입니다. (선택 사항)
   const NoteEditorColorButton({
     required this.color,
     required this.isActive,
@@ -14,26 +22,24 @@ class NoteEditorColorButton extends StatelessWidget {
     super.key,
   });
 
+  /// 버튼의 배경 색상.
   final Color color;
 
+  /// 버튼의 테두리 색상. (선택 사항)
   final Color? outlineColor;
 
+  /// 버튼이 활성화 상태인지 여부.
   final bool isActive;
 
+  /// 버튼 클릭 시 호출될 콜백 함수.
   final VoidCallback onPressed;
 
+  /// 버튼 내부에 표시될 위젯. (선택 사항)
   final Icon? child;
 
+  /// 버튼에 대한 툴팁 텍스트. (선택 사항)
   final String? tooltip;
 
-  /// 색상 버튼 위젯 생성
-  ///
-  /// [color] - 색상
-  /// [isActive] - 활성 상태
-  /// [onPressed] - 버튼 클릭 시 호출할 콜백
-  /// [outlineColor] - 테두리 색상
-  /// [child] - 버튼 아이콘
-  /// [tooltip] - 버튼에 표시할 텍스트
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(

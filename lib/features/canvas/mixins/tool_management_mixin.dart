@@ -4,7 +4,10 @@ import '../models/tool_mode.dart';
 
 /// 도구 관리 기능을 제공하는 Mixin
 mixin ToolManagementMixin on ScribbleNotifier {
+  /// 현재 도구 모드
   ToolMode get toolMode;
+
+  /// 도구 모드를 설정합니다.
   set toolMode(ToolMode value);
 
   /// 공통 도구 변경 메서드
@@ -32,10 +35,16 @@ mixin ToolManagementMixin on ScribbleNotifier {
     }
   }
 
+  /// 펜 모드로 설정합니다.
   void setPen() => setTool(ToolMode.pen);
+
+  /// 하이라이터 모드로 설정합니다.
   void setHighlighter() => setTool(ToolMode.highlighter);
+
+  /// 링커 모드로 설정합니다.
   void setLinker() => setTool(ToolMode.linker);
 
+  /// 지우개 모드로 설정합니다.
   @override
   void setEraser() => setTool(ToolMode.eraser);
 }

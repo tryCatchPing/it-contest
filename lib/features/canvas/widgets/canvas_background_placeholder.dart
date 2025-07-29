@@ -4,13 +4,20 @@ import 'package:flutter/material.dart';
 ///
 /// 캔버스의 배경을 표시합니다.
 class CanvasBackgroundPlaceholder extends StatelessWidget {
+  /// [CanvasBackgroundPlaceholder]의 생성자.
+  ///
+  /// [width]는 플레이스홀더의 너비입니다.
+  /// [height]는 플레이스홀더의 높이입니다.
   const CanvasBackgroundPlaceholder({
     required this.width,
     required this.height,
     super.key,
   });
 
+  /// 플레이스홀더의 너비.
   final double width;
+
+  /// 플레이스홀더의 높이.
   final double height;
 
   @override

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:scribble/scribble.dart';
 
@@ -8,11 +9,15 @@ import '../../notifiers/custom_scribble_notifier.dart';
 ///
 /// 펜, 지우개, 하이라이터, 링커 모드를 선택할 수 있습니다.
 class NoteEditorToolSelector extends StatelessWidget {
+  /// [NoteEditorToolSelector]의 생성자.
+  ///
+  /// [notifier]는 스케치 상태를 관리하는 Notifier입니다.
   const NoteEditorToolSelector({
     required this.notifier,
     super.key,
   });
 
+  /// 스케치 상태를 관리하는 Notifier.
   final CustomScribbleNotifier notifier;
 
   @override
@@ -43,10 +48,11 @@ class NoteEditorToolSelector extends StatelessWidget {
     );
   }
 
-  /// 그리기 모드 버튼 생성
+  /// 그리기 모드 버튼을 생성합니다.
   ///
-  /// [drawingMode] - 선택할 그리기 모드
-  /// [tooltip] - 버튼에 표시할 텍스트
+  /// [context]는 빌드 컨텍스트입니다.
+  /// [drawingMode]는 선택할 그리기 모드입니다.
+  /// [tooltip]은 버튼에 표시할 텍스트입니다.
   Widget _buildToolButton(
     BuildContext context, {
     required ToolMode drawingMode,
@@ -69,7 +75,7 @@ class NoteEditorToolSelector extends StatelessWidget {
               textStyle: const TextStyle(fontSize: 12),
             ),
             onPressed: () {
-              print('onPressed: $drawingMode');
+              debugPrint('onPressed: $drawingMode');
               switch (drawingMode) {
                 case ToolMode.pen:
                   notifier.setPen();
@@ -85,7 +91,8 @@ class NoteEditorToolSelector extends StatelessWidget {
                   break;
               }
               // 🎯 추가된 로그: 버튼 클릭 후 notifier의 toolMode 확인
-              print('After click, notifier.toolMode: ${notifier.toolMode}');
+              debugPrint(
+                'After click, notifier.toolMode: ${notifier.toolMode}');
             },
             child: Text(tooltip),
           ),

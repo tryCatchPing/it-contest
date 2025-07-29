@@ -7,30 +7,38 @@ class AppRoutes {
   AppRoutes._();
 
   // 📍 라우트 경로 상수들
+  /// 홈 화면 라우트 경로.
   static const String home = '/';
+  /// 노트 목록 화면 라우트 경로.
   static const String noteList = '/notes';
+  /// 노트 편집 화면 라우트 경로. `:noteId`는 동적 세그먼트입니다.
   static const String noteEdit = '/notes/:noteId/edit'; // 더 명확한 경로
+  /// PDF 캔버스 화면 라우트 경로.
   static const String pdfCanvas = '/pdf-canvas';
 
   // 🎯 라우트 이름 상수들 (GoRouter name 속성용)
+  /// 홈 화면 라우트 이름.
   static const String homeName = 'home';
+  /// 노트 목록 화면 라우트 이름.
   static const String noteListName = 'noteList';
+  /// 노트 편집 화면 라우트 이름.
   static const String noteEditName = 'noteEdit';
+  /// PDF 캔버스 화면 라우트 이름.
   static const String pdfCanvasName = 'pdfCanvas';
 
   // 🚀 타입 안전한 네비게이션 헬퍼 메서드들
 
-  /// 홈페이지로 이동
+  /// 홈페이지로 이동하는 라우트 경로를 반환합니다.
   static String homeRoute() => home;
 
-  /// 노트 목록페이지로 이동
+  /// 노트 목록 페이지로 이동하는 라우트 경로를 반환합니다.
   static String noteListRoute() => noteList;
 
-  /// 특정 노트 편집페이지로 이동
+  /// 특정 노트 편집 페이지로 이동하는 라우트 경로를 반환합니다.
   /// [noteId]: 편집할 노트의 ID
   static String noteEditRoute(String noteId) => '/notes/$noteId/edit';
 
-  /// PDF 캔버스 페이지로 이동
+  /// PDF 캔버스 페이지로 이동하는 라우트 경로를 반환합니다.
   static String pdfCanvasRoute() => pdfCanvas;
 
   // 📋 추후 확장성을 위한 구조 예시

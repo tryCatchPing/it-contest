@@ -6,14 +6,24 @@ import '../../models/tool_mode.dart';
 import '../../notifiers/custom_scribble_notifier.dart';
 import 'note_editor_color_button.dart';
 
+/// 색상 선택기 위젯입니다.
+///
+/// 현재 선택된 도구 모드에 따라 적절한 색상 버튼을 표시하고, 사용자가 색상을 선택할 수 있도록 합니다.
 class NoteEditorColorSelector extends StatelessWidget {
+  /// [NoteEditorColorSelector]의 생성자.
+  ///
+  /// [notifier]는 스케치 상태를 관리하는 Notifier입니다.
+  /// [toolMode]는 현재 선택된 도구 모드입니다.
   const NoteEditorColorSelector({
     required this.notifier,
     required this.toolMode,
     super.key,
   });
 
+  /// 스케치 상태를 관리하는 Notifier.
   final CustomScribbleNotifier notifier;
+
+  /// 현재 선택된 도구 모드.
   final ToolMode toolMode;
 
   @override

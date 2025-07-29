@@ -23,6 +23,13 @@ import 'package:flutter/material.dart';
 /// ㄴ HomeScreen → (현 위젯) → 라우트 이동
 /// ㄴ NoteListScreen → (현 위젯) → 라우트 이동
 class NavigationCard extends StatelessWidget {
+  /// [NavigationCard]의 생성자.
+  ///
+  /// [icon]은 카드에 표시할 아이콘입니다.
+  /// [title]은 카드의 제목 텍스트입니다.
+  /// [subtitle]은 카드의 설명 텍스트입니다.
+  /// [color]는 카드의 테마 색상입니다.
+  /// [onTap]은 카드를 탭했을 때 실행할 함수입니다.
   const NavigationCard({
     required this.icon,
     required this.title,
@@ -32,10 +39,19 @@ class NavigationCard extends StatelessWidget {
     super.key,
   });
 
+  /// 카드에 표시할 아이콘.
   final IconData icon;
+
+  /// 카드의 제목 텍스트.
   final String title;
+
+  /// 카드의 설명 텍스트.
   final String subtitle;
+
+  /// 카드의 테마 색상.
   final Color color;
+
+  /// 카드를 탭했을 때 실행할 함수.
   final VoidCallback onTap;
 
   @override
@@ -52,10 +68,13 @@ class NavigationCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+          border: Border.all(
+            color: color.withAlpha((255 * 0.3).round()),
+            width: 2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.1),
+              color: color.withAlpha((255 * 0.1).round()),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -67,7 +86,7 @@ class NavigationCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withAlpha((255 * 0.1).round()),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
