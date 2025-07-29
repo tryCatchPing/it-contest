@@ -4,6 +4,7 @@ import 'note_page_model.dart';
 enum NoteSourceType {
   /// 빈 노트.
   blank,
+
   /// PDF 기반 노트.
   pdfBased,
 }
@@ -63,56 +64,4 @@ class NoteModel {
 
   /// 빈 노트인지 여부를 반환합니다.
   bool get isBlank => sourceType == NoteSourceType.blank;
-
-  /// PDF 기반 노트를 생성하는 팩토리 생성자.
-  ///
-  /// [noteId]는 노트의 고유 ID입니다.
-  /// [title]은 노트의 제목입니다.
-  /// [pdfPages]는 PDF에서 파생된 페이지 목록입니다.
-  /// [pdfPath]는 원본 PDF 파일의 경로입니다.
-  /// [totalPages]는 원본 PDF의 총 페이지 수입니다.
-  factory NoteModel.fromPdf({
-    required String noteId,
-    required String title,
-    required List<NotePageModel> pdfPages,
-    required String pdfPath,
-    required int totalPages,
-  }) {
-    return NoteModel(
-      noteId: noteId,
-      title: title,
-      pages: pdfPages,
-      sourceType: NoteSourceType.pdfBased,
-      sourcePdfPath: pdfPath,
-      totalPdfPages: totalPages,
-    );
-  }
-
-  /// 빈 노트를 생성하는 팩토리 생성자.
-  ///
-  /// [noteId]는 노트의 고유 ID입니다.
-  /// [title]은 노트의 제목입니다.
-  /// [initialPageCount]는 초기에 생성할 빈 페이지의 수입니다 (기본값: 3).
-  factory NoteModel.blank({
-    required String noteId,
-    required String title,
-    int initialPageCount = 3,
-  }) {
-    final pages = List.generate(
-      initialPageCount,
-      (index) => NotePageModel(
-        noteId: noteId,
-        pageId: '${noteId}_page_${index + 1}',
-        pageNumber: index + 1,
-        jsonData: '{"lines":[]}',
-      ),
-    );
-
-    return NoteModel(
-      noteId: noteId,
-      title: title,
-      pages: pages,
-      sourceType: NoteSourceType.blank,
-    );
-  }
 }

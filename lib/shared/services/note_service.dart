@@ -9,7 +9,7 @@ class NoteService {
   static final NoteService _instance = NoteService._();
   NoteService._();
 
-  // 몰라 인스턴스 생성하는거라는데?
+  // Singleton 패턴
   static NoteService get instance => _instance;
 
   static const _uuid = Uuid();
@@ -81,9 +81,9 @@ class NoteService {
   */
 
   /// PDF 노트 생성
-  /// 
+  ///
   /// [title]: 노트 제목 (선택사항, 미제공시 PDF에서 추출한 제목 사용)
-  /// 
+  ///
   /// Returns: 생성된 NoteModel 또는 null (실패시)
   Future<NoteModel?> createPdfNote({String? title}) async {
     try {
@@ -115,17 +115,16 @@ class NoteService {
 
       print('✅ PDF 노트 생성 완료: $noteTitle (${pages.length}페이지)');
       return note;
-      
     } catch (e) {
       print('❌ PDF 노트 생성 실패: $e');
       return null;
     }
   }
-  
+
   /// PDF 데이터를 NotePageModel 리스트로 변환
   List<NotePageModel> _createPagesFromPdfData(PdfProcessedData pdfData) {
     final pages = <NotePageModel>[];
-    
+
     for (final pageData in pdfData.pages) {
       final page = NotePageModel(
         noteId: pdfData.noteId,
@@ -141,7 +140,7 @@ class NoteService {
       );
       pages.add(page);
     }
-    
+
     return pages;
   }
 

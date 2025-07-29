@@ -1,12 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../shared/routing/app_routes.dart';
-import '../../../shared/services/pdf_note_service.dart';
+import '../../../shared/services/note_service.dart';
 import '../../../shared/widgets/navigation_card.dart';
 import '../data/fake_notes.dart';
-import '../models/note_model.dart';
 
 /// 노트 목록을 표시하고 새로운 노트를 생성하는 화면입니다.
 ///
@@ -36,14 +34,13 @@ class _NoteListScreenState extends State<NoteListScreen> {
     });
 
     try {
-      final pdfNote = await PdfNoteService.createNoteFromPdf();
+      final pdfNote = await NoteService.instance.createPdfNote();
 
       if (pdfNote != null) {
         // TODO(Jidou): 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
         fakeNotes.add(pdfNote);
 
-        if (mounted)
-        {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('PDF 노트 "${pdfNote.title}"가 성공적으로 생성되었습니다!'),
@@ -74,34 +71,26 @@ class _NoteListScreenState extends State<NoteListScreen> {
     }
   }
 
-  /// 빈 노트를 생성합니다.
-  void _createBlankNote() {
+  Future<void> _createBlankNote() async {
     try {
-      // 고유 ID 생성
-      final noteId = 'blank_note_${DateTime.now().millisecondsSinceEpoch}';
-      final title = '새 노트 ${DateTime.now().toString().substring(0, 16)}';
+      final blankNote = await NoteService.instance.createBlankNote();
 
-      // 빈 노트 생성 (기본 3페이지)
-      final blankNote = NoteModel.blank(
-        noteId: noteId,
-        title: title,
-        initialPageCount: 1,
-      );
+      if (blankNote != null) {
+        // TODO(xodnd): 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
+        fakeNotes.add(blankNote);
 
-      // TODO(Jidou): 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
-      fakeNotes.add(blankNote);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('빈 노트 "${blankNote.title}"가 생성되었습니다!'),
+              backgroundColor: Colors.green,
+            ),
+          );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('빈 노트 "$title"가 생성되었습니다!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        setState(() {
-          // UI 업데이트를 위한 setState
-        });
+          setState(() {
+            // UI 업데이트를 위한 setState
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -237,7 +226,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
                         ),
                       ),
                     ),
-                    onPressed: _createBlankNote,
+                    onPressed: () => _createBlankNote(),
                     child: const Text('노트 생성'),
                   ),
                 ),
