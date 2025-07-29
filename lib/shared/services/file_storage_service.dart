@@ -51,15 +51,15 @@ class FileStorageService {
   }
 
   /// 특정 노트의 페이지 이미지 디렉토리 경로를 가져옵니다
-  static Future<String> _getPageImagesDirectoryPath(String noteId) async {
+  static Future<String> getPageImagesDirectoryPath(String noteId) async {
     final noteDir = await _getNoteDirectoryPath(noteId);
     return path.join(noteDir, _pagesDirectoryName);
   }
 
   /// 필요한 디렉토리 구조를 생성합니다
-  static Future<void> _ensureDirectoryStructure(String noteId) async {
+  static Future<void> ensureDirectoryStructure(String noteId) async {
     final noteDir = await _getNoteDirectoryPath(noteId);
-    final pagesDir = await _getPageImagesDirectoryPath(noteId);
+    final pagesDir = await getPageImagesDirectoryPath(noteId);
     final sketchesDir = path.join(noteDir, _sketchesDirectoryName);
 
     await Directory(noteDir).create(recursive: true);
@@ -83,7 +83,7 @@ class FileStorageService {
       debugPrint('📋 PDF 파일 복사 시작: $sourcePdfPath -> $noteId');
 
       // 디렉토리 구조 생성
-      await _ensureDirectoryStructure(noteId);
+      await ensureDirectoryStructure(noteId);
 
       // 원본 파일 확인
       final sourceFile = File(sourcePdfPath);
@@ -129,7 +129,7 @@ class FileStorageService {
       // PDF 문서 열기
       final document = await PdfDocument.openFile(pdfPath);
       final totalPages = document.pagesCount;
-      final pageImagesDir = await _getPageImagesDirectoryPath(noteId);
+      final pageImagesDir = await getPageImagesDirectoryPath(noteId);
 
       debugPrint('📄 렌더링할 페이지 수: $totalPages');
 
@@ -208,7 +208,7 @@ class FileStorageService {
     required int pageNumber,
   }) async {
     try {
-      final pageImagesDir = await _getPageImagesDirectoryPath(noteId);
+      final pageImagesDir = await getPageImagesDirectoryPath(noteId);
       final imageFileName = 'page_$pageNumber.jpg';
       final imagePath = path.join(pageImagesDir, imageFileName);
       final imageFile = File(imagePath);
