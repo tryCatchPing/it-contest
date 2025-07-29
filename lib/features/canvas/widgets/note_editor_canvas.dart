@@ -18,6 +18,17 @@ import 'toolbar/note_editor_toolbar.dart';
 ///     ㄴ NavigationCard → 라우트 이동 (/notes/:noteId/edit) → NoteEditorScreen
 ///       ㄴ (현 위젯)
 class NoteEditorCanvas extends StatelessWidget {
+  /// [NoteEditorCanvas]의 생성자.
+  ///
+  /// [totalPages]는 전체 페이지 수입니다.
+  /// [currentPageIndex]는 현재 페이지의 인덱스입니다.
+  /// [pageController]는 페이지 뷰를 제어하는 컨트롤러입니다.
+  /// [scribbleNotifiers]는 각 페이지의 스크리블 Notifier 맵입니다.
+  /// [currentNotifier]는 현재 활성화된 스크리블 Notifier입니다.
+  /// [transformationController]는 캔버스의 변환을 제어하는 컨트롤러입니다.
+  /// [simulatePressure]는 필압 시뮬레이션 여부입니다.
+  /// [onPageChanged]는 페이지 변경 시 호출되는 콜백 함수입니다.
+  /// [onPressureToggleChanged]는 필압 토글 변경 시 호출되는 콜백 함수입니다.
   const NoteEditorCanvas({
     super.key,
     required this.totalPages,
@@ -31,14 +42,31 @@ class NoteEditorCanvas extends StatelessWidget {
     required this.onPressureToggleChanged,
   });
 
+  /// 전체 페이지 수.
   final int totalPages;
+
+  /// 현재 페이지의 인덱스.
   final int currentPageIndex;
+
+  /// 페이지 뷰를 제어하는 컨트롤러.
   final PageController pageController;
+
+  /// 각 페이지의 스크리블 Notifier 맵.
   final Map<int, CustomScribbleNotifier> scribbleNotifiers;
+
+  /// 현재 활성화된 스크리블 Notifier.
   final CustomScribbleNotifier currentNotifier;
+
+  /// 캔버스의 변환을 제어하는 컨트롤러.
   final TransformationController transformationController;
+
+  /// 필압 시뮬레이션 여부.
   final bool simulatePressure;
+
+  /// 페이지 변경 시 호출되는 콜백 함수.
   final ValueChanged<int> onPageChanged;
+
+  /// 필압 토글 변경 시 호출되는 콜백 함수.
   final ValueChanged<bool> onPressureToggleChanged;
 
   // 캔버스 크기 상수

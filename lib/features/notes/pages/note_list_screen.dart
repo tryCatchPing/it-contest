@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,16 +8,14 @@ import '../../../shared/widgets/navigation_card.dart';
 import '../data/fake_notes.dart';
 import '../models/note_model.dart';
 
-/// '/notes' route 에 대한 화면
-/// 1. 노트 목록
-/// 2. PDF 없는 빈 노트 생성
-/// 3. PDF 파일에서 노트 생성
+/// 노트 목록을 표시하고 새로운 노트를 생성하는 화면입니다.
 ///
 /// 위젯 계층 구조:
 /// MyApp
 /// ㄴ HomeScreen
 ///   ㄴ NavigationCard → 라우트 이동 (/notes) → (현 위젯)
 class NoteListScreen extends StatefulWidget {
+  /// [NoteListScreen]의 생성자.
   const NoteListScreen({super.key});
 
   @override
@@ -26,8 +25,11 @@ class NoteListScreen extends StatefulWidget {
 class _NoteListScreenState extends State<NoteListScreen> {
   bool _isImporting = false;
 
+  /// PDF 파일을 선택하고 노트로 가져옵니다.
   Future<void> _importPdfNote() async {
-    if (_isImporting) return;
+    if (_isImporting) {
+      return;
+    }
 
     setState(() {
       _isImporting = true;
@@ -37,10 +39,11 @@ class _NoteListScreenState extends State<NoteListScreen> {
       final pdfNote = await PdfNoteService.createNoteFromPdf();
 
       if (pdfNote != null) {
-        // TODO(xodnd): 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
+        // TODO(Jidou): 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
         fakeNotes.add(pdfNote);
 
-        if (mounted) {
+        if (mounted)
+        {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('PDF 노트 "${pdfNote.title}"가 성공적으로 생성되었습니다!'),
@@ -71,6 +74,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
     }
   }
 
+  /// 빈 노트를 생성합니다.
   void _createBlankNote() {
     try {
       // 고유 ID 생성
@@ -84,7 +88,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
         initialPageCount: 1,
       );
 
-      // TODO: 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
+      // TODO(Jidou): 실제 구현에서는 DB에 저장하거나 상태 관리를 통해 노트 목록에 추가
       fakeNotes.add(blankNote);
 
       if (mounted) {
@@ -142,7 +146,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withAlpha((255 * 0.1).round()),
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -166,7 +170,7 @@ class _NoteListScreenState extends State<NoteListScreen> {
                           subtitle: '${fakeNotes[i].pages.length} 페이지',
                           color: const Color(0xFF6750A4),
                           onTap: () {
-                            print('📝 노트 편집: ${fakeNotes[i].noteId}');
+                            debugPrint('📝 노트 편집: ${fakeNotes[i].noteId}');
                             // canvas_routers.dart - /notes/:noteId/edit 이동
                             // 노트 편집 화면 NoteEditorScreen 으로 이동
                             context.pushNamed(

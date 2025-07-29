@@ -3,12 +3,17 @@ import 'package:scribble/scribble.dart';
 
 import '../../notifiers/custom_scribble_notifier.dart';
 
+/// 포인터 모드 (모든 터치, 펜 전용)를 선택하는 위젯입니다.
 class NoteEditorPointerMode extends StatelessWidget {
+  /// [NoteEditorPointerMode]의 생성자.
+  ///
+  /// [notifier]는 스케치 상태를 관리하는 Notifier입니다.
   const NoteEditorPointerMode({
     required this.notifier,
     super.key,
   });
 
+  /// 스케치 상태를 관리하는 Notifier.
   final CustomScribbleNotifier notifier;
 
   @override

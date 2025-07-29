@@ -1,17 +1,36 @@
 import 'package:flutter/material.dart';
 
+/// 링커를 그리는 CustomPainter입니다.
 class RectangleLinkerPainter extends CustomPainter {
+  /// 이미 존재하는 링커 목록입니다.
   final List<Rect> existingRectangles;
-  final Offset? currentDragStart;
-  final Offset? currentDragEnd;
-  final Color fillColor; // 링커 채우기 색상
-  final Color borderColor; // 링커 테두리 색상
-  final double borderWidth; // 링커 테두리 두께
-  final Color currentFillColor; // 현재 드래그 중인 링커 채우기 색상
-  final Color currentBorderColor; // 현재 드래그 중인 링커 테두리 색상
-  final double currentBorderWidth; // 현재 드래그 중인 링커 테두리 두께
 
-  /// 링커를 그리는 CustomPainter
+  /// 현재 드래그 중인 링커의 시작점입니다.
+  final Offset? currentDragStart;
+
+  /// 현재 드래그 중인 링커의 끝점입니다.
+  final Offset? currentDragEnd;
+
+  /// 링커 채우기 색상.
+  final Color fillColor;
+
+  /// 링커 테두리 색상.
+  final Color borderColor;
+
+  /// 링커 테두리 두께.
+  final double borderWidth;
+
+  /// 현재 드래그 중인 링커 채우기 색상.
+  final Color currentFillColor;
+
+  /// 현재 드래그 중인 링커 테두리 색상.
+  final Color currentBorderColor;
+
+  /// 현재 드래그 중인 링커 테두리 두께.
+  final double currentBorderWidth;
+
+  /// [RectangleLinkerPainter]의 생성자.
+  ///
   /// [existingRectangles]는 이미 존재하는 링커 목록입니다.
   /// [currentDragStart]와 [currentDragEnd]는 현재 드래그 중인 링커의 시작점과 끝점입니다.
   /// [fillColor], [borderColor], [borderWidth]는 기존 링커의 스타일을 정의합니다.
@@ -33,13 +52,15 @@ class RectangleLinkerPainter extends CustomPainter {
     // 1. 기존 링커를 위한 Paint 객체 정의
     // 채우기 스타일
     final existingFillPaint = Paint()
-      ..color = fillColor.withOpacity(0.2) // 투명도 적용
+      ..color = fillColor.withAlpha((255 * 0.2).round())
       ..style = PaintingStyle.fill;
 
     // 테두리 스타일
     final existingBorderPaint = Paint()
-      ..color = borderColor // 테두리 색상
-      ..style = PaintingStyle.stroke // 테두리만 그리기
+      ..color =
+          borderColor // 테두리 색상
+      ..style = PaintingStyle
+          .stroke // 테두리만 그리기
       ..strokeWidth = borderWidth; // 테두리 두께
 
     // 2. 기존에 그려진 링커들 그리기
@@ -55,7 +76,7 @@ class RectangleLinkerPainter extends CustomPainter {
 
       // 현재 드래그 중인 링커의 채우기 스타일
       final currentDragFillPaint = Paint()
-        ..color = currentFillColor.withOpacity(0.2) // 투명도 적용
+        ..color = currentFillColor.withAlpha((255 * 0.2).round())
         ..style = PaintingStyle.fill;
 
       // 현재 드래그 중인 링커의 테두리 스타일

@@ -2,20 +2,42 @@ import 'package:flutter/material.dart';
 import '../models/tool_mode.dart'; // ToolMode 정의 필요
 import 'rectangle_linker_painter.dart';
 
+/// 링커 생성 및 상호작용 제스처를 처리하고 링커 목록을 관리하는 위젯입니다.
+/// [toolMode]에 따라 드래그 제스처 활성화 여부를 결정하며, 탭 제스처는 항상 활성화됩니다.
 class LinkerGestureLayer extends StatefulWidget {
+  /// 현재 도구 모드.
   final ToolMode toolMode;
+
+  /// 링커 목록이 변경될 때 호출되는 콜백 함수.
   final ValueChanged<List<Rect>> onLinkerRectanglesChanged;
+
+  /// 링커가 탭될 때 호출되는 콜백 함수.
   final ValueChanged<Rect> onLinkerTapped;
+
+  /// 유효한 링커로 인식될 최소 크기.
   final double minLinkerRectangleSize;
+
+  /// 기존 링커의 채우기 색상.
   final Color linkerFillColor;
+
+  /// 기존 링커의 테두리 색상.
   final Color linkerBorderColor;
+
+  /// 기존 링커의 테두리 두께.
   final double linkerBorderWidth;
+
+  /// 현재 드래그 중인 링커의 채우기 색상.
   final Color currentLinkerFillColor;
+
+  /// 현재 드래그 중인 링커의 테두리 색상.
   final Color currentLinkerBorderColor;
+
+  /// 현재 드래그 중인 링커의 테두리 두께.
   final double currentLinkerBorderWidth;
 
-  /// 링커 생성 및 상호작용 제스처를 처리하고 링커 목록을 관리하는 위젯입니다.
-  /// [toolMode]에 따라 드래그 제스처 활성화 여부를 결정하며, 탭 제스처는 항상 활성화됩니다.
+  /// [LinkerGestureLayer]의 생성자.
+  ///
+  /// [toolMode]는 현재 도구 모드입니다.
   /// [onLinkerRectanglesChanged]는 링커 목록이 변경될 때 호출됩니다.
   /// [onLinkerTapped]는 링커가 탭될 때 호출됩니다.
   /// [minLinkerRectangleSize]는 유효한 링커로 인식될 최소 크기입니다.
@@ -64,7 +86,8 @@ class _LinkerGestureLayerState extends State<LinkerGestureLayer> {
     setState(() {
       if (_currentDragStart != null && _currentDragEnd != null) {
         final rect = Rect.fromPoints(_currentDragStart!, _currentDragEnd!);
-        if (rect.width.abs() > widget.minLinkerRectangleSize && rect.height.abs() > widget.minLinkerRectangleSize) {
+        if (rect.width.abs() > widget.minLinkerRectangleSize &&
+            rect.height.abs() > widget.minLinkerRectangleSize) {
           _linkerRectangles.add(rect);
           widget.onLinkerRectanglesChanged(_linkerRectangles); // 콜백 호출
         }

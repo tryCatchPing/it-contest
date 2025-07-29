@@ -7,17 +7,23 @@ import '../notifiers/custom_scribble_notifier.dart';
 import '../widgets/note_editor_canvas.dart';
 import '../widgets/toolbar/note_editor_actions_bar.dart';
 
+/// 노트 편집 화면을 구성하는 위젯입니다.
+///
 /// 위젯 계층 구조:
 /// MyApp
 /// ㄴ HomeScreen
 ///   ㄴ NavigationCard → 라우트 이동 (/notes) → NoteListScreen
 ///     ㄴ NavigationCard → 라우트 이동 (/notes/:noteId/edit) → (현 위젯)
 class NoteEditorScreen extends StatefulWidget {
+  /// [NoteEditorScreen]의 생성자.
+  ///
+  /// [note]는 편집할 노트 모델입니다.
   const NoteEditorScreen({
     super.key,
     required this.note,
   });
 
+  /// 편집할 노트 모델.
   final NoteModel note;
 
   @override
@@ -108,6 +114,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   /// 페이지 변경 콜백
+  ///
+  /// [index]는 변경된 페이지의 인덱스입니다.
   void _onPageChanged(int index) {
     setState(() {
       _currentPageIndex = index;
@@ -117,6 +125,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   /// 필압 시뮬레이션 토글 콜백
+  ///
+  /// [value]는 필압 시뮬레이션 활성화 여부입니다.
   void _onPressureToggleChanged(bool value) {
     setState(() {
       _simulatePressure = value;

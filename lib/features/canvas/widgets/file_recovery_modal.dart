@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 /// 1. 재렌더링: 전체 PDF를 다시 처리하여 복구
 /// 2. 노트 삭제: 손상된 노트를 완전히 삭제
 class FileRecoveryModal extends StatelessWidget {
+  /// [FileRecoveryModal]의 생성자.
+  ///
+  /// [noteTitle]은 손상된 노트의 제목입니다.
+  /// [onRerender]는 재렌더링 버튼을 눌렀을 때 호출되는 콜백 함수입니다.
+  /// [onDelete]는 노트 삭제 버튼을 눌렀을 때 호출되는 콜백 함수입니다.
   const FileRecoveryModal({
     required this.noteTitle,
     required this.onRerender,
@@ -13,8 +18,13 @@ class FileRecoveryModal extends StatelessWidget {
     super.key,
   });
 
+  /// 손상된 노트의 제목.
   final String noteTitle;
+
+  /// 재렌더링 버튼을 눌렀을 때 호출되는 콜백 함수.
   final VoidCallback onRerender;
+
+  /// 노트 삭제 버튼을 눌렀을 때 호출되는 콜백 함수.
   final VoidCallback onDelete;
 
   @override
@@ -90,7 +100,12 @@ class FileRecoveryModal extends StatelessWidget {
     );
   }
 
-  /// 모달을 표시하는 정적 메서드
+  /// 파일 복구 모달을 표시합니다.
+  ///
+  /// [context]는 빌드 컨텍스트입니다.
+  /// [noteTitle]은 손상된 노트의 제목입니다.
+  /// [onRerender]는 재렌더링 버튼을 눌렀을 때 호출되는 콜백 함수입니다.
+  /// [onDelete]는 노트 삭제 버튼을 눌렀을 때 호출되는 콜백 함수입니다.
   static Future<void> show(
     BuildContext context, {
     required String noteTitle,
@@ -111,6 +126,11 @@ class FileRecoveryModal extends StatelessWidget {
 
 /// 재렌더링 진행 상황을 표시하는 모달
 class RerenderProgressModal extends StatelessWidget {
+  /// [RerenderProgressModal]의 생성자.
+  ///
+  /// [progress]는 현재 진행 상황 (0.0 ~ 1.0)입니다.
+  /// [currentPage]는 현재 렌더링 중인 페이지 번호입니다.
+  /// [totalPages]는 전체 페이지 수입니다.
   const RerenderProgressModal({
     required this.progress,
     required this.currentPage,
@@ -118,14 +138,19 @@ class RerenderProgressModal extends StatelessWidget {
     super.key,
   });
 
-  final double progress; // 0.0 ~ 1.0
+  /// 현재 진행 상황 (0.0 ~ 1.0).
+  final double progress;
+
+  /// 현재 렌더링 중인 페이지 번호.
   final int currentPage;
+
+  /// 전체 페이지 수.
   final int totalPages;
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // 뒤로가기 방지
+    return PopScope(
+      canPop: false, // 뒤로가기 방지
       child: AlertDialog(
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -179,6 +204,11 @@ class RerenderProgressModal extends StatelessWidget {
   }
 
   /// 진행 상황 모달을 표시하는 정적 메서드
+  ///
+  /// [context]는 빌드 컨텍스트입니다.
+  /// [progress]는 현재 진행 상황 (0.0 ~ 1.0)입니다.
+  /// [currentPage]는 현재 렌더링 중인 페이지 번호입니다.
+  /// [totalPages]는 전체 페이지 수입니다.
   static Future<void> show(
     BuildContext context, {
     required double progress,

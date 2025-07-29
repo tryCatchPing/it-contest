@@ -7,6 +7,12 @@ import 'package:flutter/material.dart';
 /// - 현재 페이지 표시
 /// - 직접 페이지 점프 기능
 class NoteEditorPageNavigation extends StatelessWidget {
+  /// [NoteEditorPageNavigation]의 생성자.
+  ///
+  /// [currentPageIndex]는 현재 페이지의 인덱스입니다 (0부터 시작).
+  /// [totalPages]는 전체 페이지 수입니다.
+  /// [pageController]는 페이지 뷰를 제어하는 컨트롤러입니다.
+  /// [onPageChanged]는 페이지 변경 시 호출되는 콜백 함수입니다.
   const NoteEditorPageNavigation({
     required this.currentPageIndex,
     required this.totalPages,
@@ -15,9 +21,16 @@ class NoteEditorPageNavigation extends StatelessWidget {
     super.key,
   });
 
+  /// 현재 페이지의 인덱스 (0부터 시작).
   final int currentPageIndex;
+
+  /// 전체 페이지 수.
   final int totalPages;
+
+  /// 페이지 뷰를 제어하는 컨트롤러.
   final PageController pageController;
+
+  /// 페이지 변경 시 호출되는 콜백 함수.
   final ValueChanged<int>? onPageChanged;
 
   /// 이전 페이지로 이동
@@ -131,7 +144,7 @@ class NoteEditorPageNavigation extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withAlpha((255 * 0.1).round()),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
