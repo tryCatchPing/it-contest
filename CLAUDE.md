@@ -237,6 +237,24 @@ lib/features/[feature_name]/
 - Mixins provide reusable state management patterns
 - Custom notifiers extend Scribble functionality
 
+## Work Distribution Strategy
+
+### **Core Development Phase (Weeks 1-4)**
+
+**Main Developer Tasks:**
+1. **Provider State Management** (Week 1): Migrate from StatefulWidget to Provider pattern
+2. **PDF Manager Service** (Week 2): Unified service with progress tracking, cancellation, and recovery
+3. **Graph View System** (Weeks 3-4): Node/edge visualization, canvas integration, complex algorithms
+
+**Secondary Developer Tasks:**
+1. **Link Functionality** (Weeks 1-2): Link creation, editing, navigation, storage
+2. **Isar Database Integration** (Weeks 3-4): Schema design, migration from fake data, PDF Manager integration
+
+**Collaboration Points:**
+- **Week 4**: Link system ↔ Graph view integration
+- **Week 4**: PDF Manager ↔ Isar DB connection
+- **Weeks 5-6**: Design system integration with both developers
+
 ## Recent Major Updates (Latest)
 
 ### PDF File System Migration (v2.1) - December 2024
@@ -269,21 +287,59 @@ lib/features/[feature_name]/
 - ✅ Canvas stroke scaling issues resolved
 - ✅ Memory cache removal and error recovery system implemented
 - ✅ Widget hierarchy documentation added to all components
+- 🔄 **CURRENT PRIORITY**: Provider state management migration
 - 🔄 **NEXT PRIORITY**: Service-centered PDF management system implementation
   - 🔄 Create unified `PdfManager` service
   - 🔄 Implement complete import → rendering → storage flow
   - 🔄 Add progress tracking and cancellation support
   - 🔄 Implement robust recovery and deletion logic
-- 🔄 Planning Isar database integration (next phase)
-- 🔄 State management migration to Provider (in progress)
+- 🔄 Graph view system for note connections (week 3-4)
+- 🔄 Isar database integration (in parallel with other developer)
+
+## 6-Week Development Roadmap
+
+### **Week 1: Provider Migration + PDF Manager Design**
+- **Days 1-2**: Provider pattern learning & basic setup
+- **Days 3-4**: Core canvas Provider conversion
+- **Days 5-7**: PDF Manager architecture design
+
+### **Week 2: PDF Manager Implementation**
+- **Days 8-10**: Core PDF Manager service implementation
+- **Days 11-12**: Error detection & recovery system
+- **Days 13-14**: Integration testing & bug fixes
+
+### **Week 3: Graph View Core Logic**
+- **Days 15-17**: Graph view architecture design & basic structure
+- **Days 18-19**: Node/edge visualization algorithms
+- **Days 20-21**: Canvas-graph view integration logic
+
+### **Week 4: Graph View Completion + Integration**
+- **Days 22-24**: Graph view UI/UX completion
+- **Days 25-26**: Link system ↔ graph view integration (with other developer)
+- **Days 27-28**: PDF Manager ↔ Isar DB integration (with other developer)
+
+### **Week 5: Design Integration**
+- **Days 29-31**: Designer-provided UI component integration
+- **Days 32-33**: App-wide design system application
+- **Days 34-35**: Usability testing & improvements
+
+### **Week 6: Final Polish & Deployment**
+- **Days 36-38**: Comprehensive bug fixes & performance optimization
+- **Days 39-40**: App Store deployment preparation & documentation
+- **Days 41-42**: Final testing & launch
 
 ## Team Context
 
-This is a 4-person team project (2 designers, 2 developers) building a handwriting note app over 8 weeks. The codebase was recently refactored to improve modularity and maintainability.
+This is a 4-person team project (2 designers, 2 developers) building a handwriting note app over 6 weeks core development + 2 weeks polish. The codebase was recently refactored with a clean modular structure.
 
-**Current Phase**: Completed PDF file system migration and canvas scaling optimization. Currently implementing service-centered PDF management system with comprehensive workflow coverage and robust error handling.
+**Team Division:**
+- **Main Developer**: Provider migration, PDF Manager service, Graph view system
+- **Secondary Developer**: Link functionality, Isar DB integration
+- **Designers**: UI component creation, design system, code conversion assistance
 
-**Next Phase**: Complete unified `PdfManager` service implementation, then move to database integration with Isar and state management standardization with Provider.
+**Current Phase**: Week 1 - Provider state management migration and PDF Manager architecture design.
+
+**Development Philosophy**: Focus on core functionality first (weeks 1-4), then design integration and polish (weeks 5-6).
 
 ## Development Guidelines
 
