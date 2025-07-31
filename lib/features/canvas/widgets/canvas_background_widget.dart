@@ -1,13 +1,12 @@
 import 'dart:io';
 
-
 import 'package:flutter/material.dart';
 
 import '../../../shared/services/file_storage_service.dart';
 import '../../notes/models/note_page_model.dart';
 import 'file_recovery_modal.dart';
 
-/// 캔버스 배경을 표시하는 위젯 (모바일 앱 전용)
+/// 캔버스 배경을 표시하는 위젯
 ///
 /// 페이지 타입에 따라 빈 캔버스 또는 PDF 페이지를 표시합니다.
 ///
@@ -39,7 +38,8 @@ class CanvasBackgroundWidget extends StatefulWidget {
   /// 현재 노트 페이지 모델.
   final NotePageModel page;
 
-  /// 캔버스 너비.
+  // 이 width랑 height는 어디서 오는거지?
+  // -> 원본 pdf 크기, 2000px 기준으로 비율 맞춰서 들어옴
   final double width;
 
   /// 캔버스 높이.
@@ -58,12 +58,20 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   @override
   void initState() {
     super.initState();
+
+    // pdf width, height 확인용
+    // 분명히 resolutionScaleFactor (3.0) 해서 들어오는거 아니었나?
+    // -> 아니었음, 원본 pdf 크기, 이제 2000px 기준으로 비율 맞춰서 들어옴
+    debugPrint('width: ${widget.width}');
+    debugPrint('height: ${widget.height}');
+
     if (widget.page.hasPdfBackground) {
       // 배경 이미지 (PDF) 로딩
       _loadBackgroundImage();
     }
   }
 
+  // 얜 뭐하는 놈이냐?
   @override
   void didUpdateWidget(CanvasBackgroundWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -117,6 +125,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         });
         // 파일 손상 감지 시 복구 모달 표시
         // setState 호출 스킵 -> 안전하게 비동기 처리
+        // TODO(xodnd): 여기 수정 필요
         _showRecoveryModal();
       }
     }
@@ -161,6 +170,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   }
 
   /// 파일 손상 감지 시 복구 모달 표시
+  // TODO(xodnd): 여기 수정 필요 - 여기서 `show`로 모달 호출 및 메서드 넘기는중
   void _showRecoveryModal() {
     // 노트 제목을 추출 (기본값 설정)
     final noteTitle = widget.page.noteId.replaceAll('_', ' ');
@@ -173,20 +183,20 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
     );
   }
 
+  // TODO(xodnd): 재랜더링 로직 PdfRecoveryService 제작 필요
   /// 재렌더링 처리
   Future<void> _handleRerender() async {
-    // TODO(Jidou): PDF 재렌더링 로직 구현
     // 현재는 간단히 재시도만 수행
     debugPrint('🔄 재렌더링 시작...');
     await _retryLoading();
   }
 
+  // TODO(xodnd): 노트 삭제 로직 구현 필요
   /// 노트 삭제 처리
   void _handleDelete() {
-    // TODO(Jidou): 노트 삭제 로직 구현
     debugPrint('🗑️ 노트 삭제 요청...');
     // Navigator를 통해 이전 화면으로 돌아가기
-    Navigator.of(context).pop();
+    // Navigator.of(context).pop();
   }
 
   @override
