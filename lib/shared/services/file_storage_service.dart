@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:pdfx/pdfx.dart';
 
 /// 앱 내부 파일 시스템을 관리하는 서비스
 ///
@@ -51,15 +50,15 @@ class FileStorageService {
   }
 
   /// 특정 노트의 페이지 이미지 디렉토리 경로를 가져옵니다
-  static Future<String> _getPageImagesDirectoryPath(String noteId) async {
+  static Future<String> getPageImagesDirectoryPath(String noteId) async {
     final noteDir = await _getNoteDirectoryPath(noteId);
     return path.join(noteDir, _pagesDirectoryName);
   }
 
   /// 필요한 디렉토리 구조를 생성합니다
-  static Future<void> _ensureDirectoryStructure(String noteId) async {
+  static Future<void> ensureDirectoryStructure(String noteId) async {
     final noteDir = await _getNoteDirectoryPath(noteId);
-    final pagesDir = await _getPageImagesDirectoryPath(noteId);
+    final pagesDir = await getPageImagesDirectoryPath(noteId);
     final sketchesDir = path.join(noteDir, _sketchesDirectoryName);
 
     await Directory(noteDir).create(recursive: true);
@@ -83,7 +82,7 @@ class FileStorageService {
       debugPrint('📋 PDF 파일 복사 시작: $sourcePdfPath -> $noteId');
 
       // 디렉토리 구조 생성
-      await _ensureDirectoryStructure(noteId);
+      await ensureDirectoryStructure(noteId);
 
       // 원본 파일 확인
       final sourceFile = File(sourcePdfPath);
@@ -105,76 +104,6 @@ class FileStorageService {
       rethrow;
     }
   }
-
-  /// PDF의 모든 페이지를 이미지로 사전 렌더링합니다
-  ///
-  /// [pdfPath]: PDF 파일 경로 (앱 내부)
-  /// [noteId]: 노트 고유 ID
-  /// [scaleFactor]: 렌더링 배율 (기본값: 3.0)
-  ///
-  /// Returns: 생성된 이미지 파일 경로들의 리스트
-  static Future<List<String>> preRenderPdfPages({
-    required String pdfPath,
-    required String noteId,
-    double scaleFactor = 3.0,
-  }) async {
-    try {
-      debugPrint('🎨 PDF 페이지 사전 렌더링 시작: $noteId');
-
-      final pdfFile = File(pdfPath);
-      if (!await pdfFile.exists()) {
-        throw Exception('PDF 파일을 찾을 수 없습니다: $pdfPath');
-      }
-
-      // PDF 문서 열기
-      final document = await PdfDocument.openFile(pdfPath);
-      final totalPages = document.pagesCount;
-      final pageImagesDir = await _getPageImagesDirectoryPath(noteId);
-
-      debugPrint('📄 렌더링할 페이지 수: $totalPages');
-
-      final renderedImagePaths = <String>[];
-
-      // 각 페이지를 이미지로 렌더링
-      for (int pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-        debugPrint('🎨 페이지 $pageNumber 렌더링 중...');
-
-        final pdfPage = await document.getPage(pageNumber);
-
-        // 고해상도로 렌더링
-        final pageImage = await pdfPage.render(
-          width: pdfPage.width * scaleFactor,
-          height: pdfPage.height * scaleFactor,
-          format: PdfPageImageFormat.jpeg,
-        );
-
-        if (pageImage?.bytes != null) {
-          // 이미지 파일로 저장
-          final imageFileName = 'page_$pageNumber.jpg';
-          final imagePath = path.join(pageImagesDir, imageFileName);
-          final imageFile = File(imagePath);
-
-          await imageFile.writeAsBytes(pageImage!.bytes);
-          renderedImagePaths.add(imagePath);
-
-          debugPrint('✅ 페이지 $pageNumber 렌더링 완료: $imagePath');
-        } else {
-          debugPrint('⚠️ 페이지 $pageNumber 렌더링 실패');
-        }
-
-        await pdfPage.close();
-      }
-
-      await document.close();
-
-      debugPrint('✅ 모든 페이지 렌더링 완료: ${renderedImagePaths.length}개');
-      return renderedImagePaths;
-    } catch (e) {
-      debugPrint('❌ PDF 페이지 렌더링 실패: $e');
-      rethrow;
-    }
-  }
-
   /// 특정 노트의 모든 파일을 삭제합니다
   ///
   /// [noteId]: 삭제할 노트의 고유 ID
@@ -208,7 +137,7 @@ class FileStorageService {
     required int pageNumber,
   }) async {
     try {
-      final pageImagesDir = await _getPageImagesDirectoryPath(noteId);
+      final pageImagesDir = await getPageImagesDirectoryPath(noteId);
       final imageFileName = 'page_$pageNumber.jpg';
       final imagePath = path.join(pageImagesDir, imageFileName);
       final imageFile = File(imagePath);

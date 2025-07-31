@@ -8,6 +8,7 @@ import '../../canvas/constants/note_editor_constant.dart';
 enum PageBackgroundType {
   /// 빈 배경.
   blank,
+
   /// PDF 배경.
   pdf,
 }
@@ -101,41 +102,5 @@ class NotePageModel {
       return backgroundHeight!;
     }
     return NoteEditorConstants.canvasHeight;
-  }
-
-  /// PDF 배경을 가진 [NotePageModel]을 생성하는 팩토리 생성자.
-  ///
-  /// [noteId]는 노트의 고유 ID입니다.
-  /// [pageId]는 페이지의 고유 ID입니다.
-  /// [pageNumber]는 페이지 번호입니다.
-  /// [jsonData]는 스케치 데이터가 포함된 JSON 문자열입니다 (기본값: 빈 스케치).
-  /// [pdfPath]는 PDF 파일 경로입니다.
-  /// [pdfPageNumber]는 PDF의 페이지 번호입니다.
-  /// [pdfWidth]는 원본 PDF 페이지 너비입니다.
-  /// [pdfHeight]는 원본 PDF 페이지 높이입니다.
-  /// [preRenderedImagePath]는 사전 렌더링된 이미지 경로입니다.
-  factory NotePageModel.withPdfBackground({
-    required String noteId,
-    required String pageId,
-    required int pageNumber,
-    String jsonData = '{"lines":[]}',
-    required String pdfPath,
-    required int pdfPageNumber,
-    required double pdfWidth,
-    required double pdfHeight,
-    String? preRenderedImagePath,
-  }) {
-    return NotePageModel(
-      noteId: noteId,
-      pageId: pageId,
-      pageNumber: pageNumber,
-      jsonData: jsonData,
-      backgroundType: PageBackgroundType.pdf,
-      backgroundPdfPath: pdfPath,
-      backgroundPdfPageNumber: pdfPageNumber,
-      backgroundWidth: pdfWidth,
-      backgroundHeight: pdfHeight,
-      preRenderedImagePath: preRenderedImagePath,
-    );
   }
 }

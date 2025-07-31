@@ -22,7 +22,7 @@ class CanvasRoutes {
         // noteId로 실제 노트 찾기
         final note = fakeNotes.firstWhere(
           (note) => note.noteId == noteId,
-          orElse: () => fakeNote, // 찾지 못하면 기본 노트 반환
+          orElse: () => fakeNotes.first, // 찾지 못하면 기본 노트 반환
         );
 
         debugPrint('🔍 찾은 노트: ${note.title} (${note.pages.length} 페이지)');
