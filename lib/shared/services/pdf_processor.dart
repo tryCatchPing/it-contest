@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:path/path.dart' as path;
 import 'package:pdfx/pdfx.dart';
@@ -14,13 +15,28 @@ import 'pdf_processed_data.dart';
 /// 효율성을 위해 PDF 문서를 한 번만 열어서 모든 작업을 수행합니다.
 class PdfProcessor {
   static const _uuid = Uuid();
+  
+  /// 표준 캔버스 크기 (긴 변 기준)
+  static const double TARGET_LONG_EDGE = 2000.0;
+
+  /// PDF 페이지 크기를 표준 크기로 정규화
+  /// 종횡비를 유지하면서 긴 변을 TARGET_LONG_EDGE로 맞춤
+  static Size _normalizePageSize(double originalWidth, double originalHeight) {
+    final aspectRatio = originalWidth / originalHeight;
+    
+    if (originalWidth >= originalHeight) {
+      // 가로가 더 긴 경우
+      return Size(TARGET_LONG_EDGE, TARGET_LONG_EDGE / aspectRatio);
+    } else {
+      // 세로가 더 긴 경우  
+      return Size(TARGET_LONG_EDGE * aspectRatio, TARGET_LONG_EDGE);
+    }
+  }
 
   /// PDF 파일 선택부터 전체 처리까지 원스톱 처리
   ///
   /// Returns: 처리된 PDF 데이터 또는 null (선택 취소/실패시)
-  static Future<PdfProcessedData?> processFromSelection({
-    double scaleFactor = 3.0,
-  }) async {
+  static Future<PdfProcessedData?> processFromSelection() async {
     try {
       // 1. PDF 파일 선택
       final sourcePdfPath = await FilePickerService.pickPdfFile();
@@ -38,7 +54,6 @@ class PdfProcessor {
       return await _processDocument(
         sourcePdfPath: sourcePdfPath,
         noteId: noteId,
-        scaleFactor: scaleFactor,
       );
     } catch (e) {
       print('❌ PDF 처리 실패: $e');
@@ -50,7 +65,6 @@ class PdfProcessor {
   static Future<PdfProcessedData> _processDocument({
     required String sourcePdfPath,
     required String noteId,
-    required double scaleFactor,
   }) async {
     // PDF 문서 열기 (한 번만)
     final document = await PdfDocument.openFile(sourcePdfPath);
@@ -80,17 +94,19 @@ class PdfProcessor {
 
       final pdfPage = await document.getPage(pageNumber);
 
-      // 1. 메타데이터 수집
-      final pageWidth = pdfPage.width;
-      final pageHeight = pdfPage.height;
+      // 1. 원본 크기 및 정규화된 크기 계산
+      final originalWidth = pdfPage.width;
+      final originalHeight = pdfPage.height;
+      final normalizedSize = _normalizePageSize(originalWidth, originalHeight);
+      
+      print('📏 페이지 $pageNumber: 원본 ${originalWidth.toInt()}x${originalHeight.toInt()} → 정규화 ${normalizedSize.width.toInt()}x${normalizedSize.height.toInt()}');
 
-      // 2. 이미지 렌더링
+      // 2. 이미지 렌더링 (정규화된 크기로)
       String? preRenderedImagePath;
       try {
         final pageImage = await pdfPage.render(
-          // TODO(xodnd): 이게 의미가 있나 모르겠다.
-          width: pageWidth * scaleFactor,
-          height: pageHeight * scaleFactor,
+          width: normalizedSize.width,
+          height: normalizedSize.height,
           format: PdfPageImageFormat.jpeg,
         );
 
@@ -111,12 +127,12 @@ class PdfProcessor {
         print('❌ 페이지 $pageNumber 렌더링 오류: $e');
       }
 
-      // 4. 페이지 데이터 생성
+      // 4. 페이지 데이터 생성 (정규화된 크기 사용)
       pages.add(
         PdfPageData(
           pageNumber: pageNumber,
-          width: pageWidth,
-          height: pageHeight,
+          width: normalizedSize.width,
+          height: normalizedSize.height,
           preRenderedImagePath: preRenderedImagePath,
         ),
       );
