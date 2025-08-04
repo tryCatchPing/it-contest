@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../../shared/services/file_storage_service.dart';
+import '../../../shared/services/pdf_recovery_service.dart';
 import '../../notes/models/note_page_model.dart';
-import 'file_recovery_modal.dart';
+import 'recovery_options_modal.dart';
+import 'recovery_progress_modal.dart';
 
 /// 캔버스 배경을 표시하는 위젯
 ///
@@ -12,7 +14,7 @@ import 'file_recovery_modal.dart';
 ///
 /// 로딩 시스템:
 /// 1. 사전 렌더링된 로컬 이미지 파일 로드
-/// 2. 파일 손상 시 복구 모달 표시
+/// 2. 파일 손상 시 PdfRecoveryService를 통한 복구 옵션 제공
 ///
 /// 위젯 계층 구조:
 /// MyApp
@@ -38,8 +40,9 @@ class CanvasBackgroundWidget extends StatefulWidget {
   /// 현재 노트 페이지 모델.
   final NotePageModel page;
 
-  // 이 width랑 height는 어디서 오는거지?
-  // -> 원본 pdf 크기, 2000px 기준으로 비율 맞춰서 들어옴
+  /// 캔버스 너비.
+  /// 
+  /// 원본 PDF 크기 기준으로 2000px 긴 변에 맞춰 비율 조정된 값입니다.
   final double width;
 
   /// 캔버스 높이.
@@ -54,6 +57,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   String? _errorMessage;
   File? _preRenderedImageFile;
   bool _hasCheckedPreRenderedImage = false;
+  bool _isRecovering = false;
 
   @override
   void initState() {
@@ -112,21 +116,18 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
         return;
       }
 
-      // 2. 파일이 없거나 손상된 경우 복구 모달 표시
-      debugPrint('❌ 사전 렌더링된 이미지를 찾을 수 없음 - 복구 필요');
-      throw Exception('사전 렌더링된 이미지 파일이 없거나 손상되었습니다.');
+      // 2. 파일이 없거나 손상된 경우 복구 시스템 호출
+      debugPrint('❌ 사전 렌더링된 이미지를 찾을 수 없음 - 복구 시스템 호출');
+      await _handleFileCorruption();
+      return;
     } catch (e) {
       debugPrint('❌ 배경 이미지 로딩 실패: $e');
-      // 해당 위젯이 현재 위젯트리에 마운트 되어있는가?
       if (mounted) {
         setState(() {
           _isLoading = false;
           _errorMessage = '배경 이미지 로딩 실패: $e';
         });
-        // 파일 손상 감지 시 복구 모달 표시
-        // setState 호출 스킵 -> 안전하게 비동기 처리
-        // TODO(xodnd): 여기 수정 필요
-        _showRecoveryModal();
+        await _handleFileCorruption();
       }
     }
   }
@@ -169,34 +170,209 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
     await _loadBackgroundImage();
   }
 
-  /// 파일 손상 감지 시 복구 모달 표시
-  // TODO(xodnd): 여기 수정 필요 - 여기서 `show`로 모달 호출 및 메서드 넘기는중
-  void _showRecoveryModal() {
-    // 노트 제목을 추출 (기본값 설정)
-    final noteTitle = widget.page.noteId.replaceAll('_', ' ');
+  /// 파일 손상을 처리합니다.
+  Future<void> _handleFileCorruption() async {
+    if (_isRecovering) {
+      return; // 이미 복구 중인 경우 중복 실행 방지
+    }
 
-    FileRecoveryModal.show(
-      context,
-      noteTitle: noteTitle,
-      onRerender: _handleRerender,
-      onDelete: _handleDelete,
+    setState(() {
+      _isRecovering = true;
+    });
+
+    try {
+      // 손상 유형 감지
+      final corruptionType = 
+          await PdfRecoveryService.detectCorruption(widget.page);
+      
+      // 노트 제목 추출
+      final noteTitle = widget.page.noteId.replaceAll('_', ' ');
+
+      if (mounted) {
+        // 복구 옵션 모달 표시
+        await RecoveryOptionsModal.show(
+          context,
+          corruptionType: corruptionType,
+          noteTitle: noteTitle,
+          onRerender: () => _handleRerender(noteTitle),
+          onSketchOnly: _handleSketchOnlyMode,
+          onDelete: () => _handleNoteDelete(noteTitle),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ 파일 손상 처리 중 오류: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('파일 손상 처리 중 오류가 발생했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRecovering = false;
+        });
+      }
+    }
+  }
+
+  /// 재렌더링을 처리합니다.
+  Future<void> _handleRerender(String noteTitle) async {
+    if (!mounted) {
+      return;
+    }
+
+    // 재렌더링 진행률 모달 표시
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => RecoveryProgressModal(
+        noteId: widget.page.noteId,
+        noteTitle: noteTitle,
+        onComplete: () {
+          // 모달 닫기
+          Navigator.of(context).pop();
+          // 위젯 새로고침
+          _refreshWidget();
+        },
+        onError: () {
+          // 모달 닫기
+          Navigator.of(context).pop();
+          // 에러 메시지 표시
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('재렌더링 중 오류가 발생했습니다.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        onCancel: () {
+          // 모달 닫기
+          Navigator.of(context).pop();
+          // 취소 메시지 표시
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('재렌더링이 취소되었습니다.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 
-  // TODO(xodnd): 재랜더링 로직 PdfRecoveryService 제작 필요
-  /// 재렌더링 처리
-  Future<void> _handleRerender() async {
-    // 현재는 간단히 재시도만 수행
-    debugPrint('🔄 재렌더링 시작...');
-    await _retryLoading();
+  /// 필기만 보기 모드를 활성화합니다.
+  Future<void> _handleSketchOnlyMode() async {
+    try {
+      await PdfRecoveryService.enableSketchOnlyMode(widget.page.noteId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('필기만 보기 모드가 활성화되었습니다.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // 위젯 새로고침
+        _refreshWidget();
+      }
+    } catch (e) {
+      debugPrint('❌ 필기만 보기 모드 활성화 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('필기만 보기 모드 활성화 실패: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  // TODO(xodnd): 노트 삭제 로직 구현 필요
-  /// 노트 삭제 처리
-  void _handleDelete() {
-    debugPrint('🗑️ 노트 삭제 요청...');
-    // Navigator를 통해 이전 화면으로 돌아가기
-    // Navigator.of(context).pop();
+  /// 노트를 삭제합니다.
+  Future<void> _handleNoteDelete(String noteTitle) async {
+    // 삭제 확인 다이얼로그
+    final shouldDelete = await _showDeleteConfirmation(noteTitle);
+    if (!shouldDelete || !mounted) {
+      return;
+    }
+
+    try {
+      final success = await PdfRecoveryService.deleteNoteCompletely(
+          widget.page.noteId);
+      
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('노트가 삭제되었습니다.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // 노트 목록으로 돌아가기
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('노트 삭제에 실패했습니다.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ 노트 삭제 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('노트 삭제 실패: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// 삭제 확인 다이얼로그를 표시합니다.
+  Future<bool> _showDeleteConfirmation(String noteTitle) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('노트 삭제 확인'),
+        content: Text(
+            '정말로 "$noteTitle" 노트를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+  /// 위젯을 새로고침합니다.
+  void _refreshWidget() {
+    setState(() {
+      _hasCheckedPreRenderedImage = false;
+      _preRenderedImageFile = null;
+      _errorMessage = null;
+    });
+    _loadBackgroundImage();
   }
 
   @override
@@ -217,6 +393,11 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   }
 
   Widget _buildPdfBackground() {
+    // 필기만 보기 모드인 경우 배경 이미지 숨김
+    if (!widget.page.showBackgroundImage) {
+      return _buildSketchOnlyBackground();
+    }
+
     if (_isLoading) {
       return _buildLoadingIndicator();
     }
@@ -242,6 +423,51 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
 
     // 파일이 없으면 로딩 표시
     return _buildLoadingIndicator();
+  }
+
+  /// 필기만 보기 모드를 위한 배경을 생성합니다.
+  Widget _buildSketchOnlyBackground() {
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 1,
+          style: BorderStyle.solid,
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.visibility_off_outlined,
+              color: Colors.grey[400],
+              size: 48,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '필기만 보기 모드',
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '배경 이미지가 숨겨져 있습니다',
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBlankBackground() {
