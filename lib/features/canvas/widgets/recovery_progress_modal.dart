@@ -86,10 +86,10 @@ class _RecoveryProgressModalState extends State<RecoveryProgressModal> {
             _statusMessage = '복구가 완료되었습니다!';
             _canCancel = false;
           });
-          
+
           // 잠시 완료 상태를 보여준 후 콜백 호출
           await Future<void>.delayed(const Duration(milliseconds: 500));
-          
+
           if (mounted) {
             widget.onComplete();
           }
@@ -146,11 +146,11 @@ class _RecoveryProgressModalState extends State<RecoveryProgressModal> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: _isCancelled 
-                ? Colors.orange[700] 
-                : _isCompleted 
-                    ? Colors.green[700] 
-                    : Colors.blue[700],
+            color: _isCancelled
+                ? Colors.orange[700]
+                : _isCompleted
+                ? Colors.green[700]
+                : Colors.blue[700],
           ),
         ),
         content: Column(
@@ -183,7 +183,7 @@ class _RecoveryProgressModalState extends State<RecoveryProgressModal> {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // 진행 상태 표시
             if (_isCancelled)
               Column(
@@ -240,7 +240,7 @@ class _RecoveryProgressModalState extends State<RecoveryProgressModal> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // 상태 메시지
                   Text(
                     _statusMessage,
@@ -250,9 +250,9 @@ class _RecoveryProgressModalState extends State<RecoveryProgressModal> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // 선형 진행률 표시기 (페이지 정보가 있을 때만)
                   if (_totalPages > 0) ...[
                     LinearProgressIndicator(
@@ -286,7 +286,7 @@ class _RecoveryProgressModalState extends State<RecoveryProgressModal> {
                   ],
                 ],
               ),
-            
+
             // 주의사항 안내
             if (!_isCancelled && !_isCompleted) ...[
               const SizedBox(height: 20),
@@ -344,32 +344,7 @@ class _RecoveryProgressModalState extends State<RecoveryProgressModal> {
     return [];
   }
 
-  /// 진행률 모달을 표시하는 정적 메서드
-  ///
-  /// [context]는 빌드 컨텍스트입니다.
-  /// [noteId]는 복구할 노트의 고유 ID입니다.
-  /// [noteTitle]은 복구할 노트의 제목입니다.
-  /// [onComplete]는 복구가 성공적으로 완료되었을 때 호출되는 콜백 함수입니다.
-  /// [onError]는 복구 중 오류가 발생했을 때 호출되는 콜백 함수입니다.
-  /// [onCancel]은 사용자가 취소했을 때 호출되는 콜백 함수입니다.
-  static void show(
-    BuildContext context, {
-    required String noteId,
-    required String noteTitle,
-    required VoidCallback onComplete,
-    required VoidCallback onError,
-    required VoidCallback onCancel,
-  }) {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => RecoveryProgressModal(
-        noteId: noteId,
-        noteTitle: noteTitle,
-        onComplete: onComplete,
-        onError: onError,
-        onCancel: onCancel,
-      ),
-    );
-  }
+  // static show 메서드 제거됨
+  // 이유: IDE에서 메서드 인식 오류로 인해 showDialog를 직접 사용하는 방식으로 변경
+  // canvas_background_widget.dart에서 showDialog<void>(...) 패턴으로 호출
 }
