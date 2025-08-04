@@ -47,6 +47,9 @@ class NotePageModel {
   /// 사전 렌더링된 이미지 경로 (앱 내부 저장).
   final String? preRenderedImagePath;
 
+  /// 배경 이미지 표시 여부 (필기만 보기 모드 지원).
+  bool showBackgroundImage;
+
   /// [NotePageModel]의 생성자.
   ///
   /// [noteId]는 노트의 고유 ID입니다.
@@ -59,6 +62,7 @@ class NotePageModel {
   /// [backgroundWidth]는 원본 PDF 페이지 너비입니다.
   /// [backgroundHeight]는 원본 PDF 페이지 높이입니다.
   /// [preRenderedImagePath]는 사전 렌더링된 이미지 경로입니다.
+  /// [showBackgroundImage]는 배경 이미지 표시 여부입니다 (기본값: true).
   NotePageModel({
     required this.noteId,
     required this.pageId,
@@ -70,6 +74,7 @@ class NotePageModel {
     this.backgroundWidth,
     this.backgroundHeight,
     this.preRenderedImagePath,
+    this.showBackgroundImage = true,
   });
 
   /// JSON 데이터에서 [Sketch] 객체로 변환합니다.
@@ -83,7 +88,8 @@ class NotePageModel {
   }
 
   /// PDF 배경이 있는지 여부를 반환합니다.
-  bool get hasPdfBackground => backgroundType == PageBackgroundType.pdf;
+  bool get hasPdfBackground => 
+      backgroundType == PageBackgroundType.pdf && showBackgroundImage;
 
   /// 사전 렌더링된 이미지가 있는지 여부를 반환합니다.
   bool get hasPreRenderedImage => preRenderedImagePath != null;
