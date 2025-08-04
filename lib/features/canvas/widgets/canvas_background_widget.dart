@@ -41,7 +41,7 @@ class CanvasBackgroundWidget extends StatefulWidget {
   final NotePageModel page;
 
   /// 캔버스 너비.
-  /// 
+  ///
   /// 원본 PDF 크기 기준으로 2000px 긴 변에 맞춰 비율 조정된 값입니다.
   final double width;
 
@@ -63,19 +63,18 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   void initState() {
     super.initState();
 
-    // pdf width, height 확인용
-    // 분명히 resolutionScaleFactor (3.0) 해서 들어오는거 아니었나?
-    // -> 아니었음, 원본 pdf 크기, 이제 2000px 기준으로 비율 맞춰서 들어옴
-    debugPrint('width: ${widget.width}');
-    debugPrint('height: ${widget.height}');
-
     if (widget.page.hasPdfBackground) {
       // 배경 이미지 (PDF) 로딩
       _loadBackgroundImage();
     }
   }
 
-  // 얜 뭐하는 놈이냐?
+  /// Called when the widget configuration changes.
+  ///
+  /// If the note page changes and has a PDF background, reload the background.
+  ///
+  /// [oldWidget] is the previous widget instance.
+  /// [widget] is the current widget instance.
   @override
   void didUpdateWidget(CanvasBackgroundWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -182,9 +181,10 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
 
     try {
       // 손상 유형 감지
-      final corruptionType = 
-          await PdfRecoveryService.detectCorruption(widget.page);
-      
+      final corruptionType = await PdfRecoveryService.detectCorruption(
+        widget.page,
+      );
+
       // 노트 제목 추출
       final noteTitle = widget.page.noteId.replaceAll('_', ' ');
 
@@ -271,7 +271,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   Future<void> _handleSketchOnlyMode() async {
     try {
       await PdfRecoveryService.enableSketchOnlyMode(widget.page.noteId);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -279,7 +279,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // 위젯 새로고침
         _refreshWidget();
       }
@@ -306,8 +306,9 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
 
     try {
       final success = await PdfRecoveryService.deleteNoteCompletely(
-          widget.page.noteId);
-      
+        widget.page.noteId,
+      );
+
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -315,7 +316,7 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // 노트 목록으로 돌아가기
         Navigator.of(context).popUntil((route) => route.isFirst);
       } else if (mounted) {
@@ -342,27 +343,29 @@ class _CanvasBackgroundWidgetState extends State<CanvasBackgroundWidget> {
   /// 삭제 확인 다이얼로그를 표시합니다.
   Future<bool> _showDeleteConfirmation(String noteTitle) async {
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('노트 삭제 확인'),
-        content: Text(
-            '정말로 "$noteTitle" 노트를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('취소'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('노트 삭제 확인'),
+            content: Text(
+              '정말로 "$noteTitle" 노트를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.',
             ),
-            child: const Text('삭제'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('취소'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('삭제'),
+              ),
+            ],
           ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   /// 위젯을 새로고침합니다.
