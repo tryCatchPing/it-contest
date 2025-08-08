@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:scribble/scribble.dart';
+
 import '../constants/note_editor_constant.dart'; // NoteEditorConstants 정의 필요
 import '../notifiers/custom_scribble_notifier.dart'; // CustomScribbleNotifier 정의 필요
 import 'canvas_background_widget.dart'; // CanvasBackgroundWidget 정의 필요
@@ -71,8 +72,8 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
   /// 포인트 간격 조정을 위한 스케일 동기화.
   void _onScaleChanged() {
     // 스케일 변경 감지 및 디바운스 로직 (구현 생략)
-    final currentScale = 
-        widget.transformationController.value.getMaxScaleOnAxis();
+    final currentScale = widget.transformationController.value
+        .getMaxScaleOnAxis();
     if ((currentScale - _lastScale).abs() < 0.01) {
       return;
     }
@@ -140,8 +141,7 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
       debugPrint('렌더링: Scribble 위젯');
     }
     if (isLinkerMode) {
-      debugPrint(
-        '렌더링: LinkerGestureLayer (CustomPaint + GestureDetector)');
+      debugPrint('렌더링: LinkerGestureLayer (CustomPaint + GestureDetector)');
     }
 
     return Padding(
@@ -173,7 +173,9 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                   child: ValueListenableBuilder<ScribbleState>(
                     valueListenable: widget.notifier,
                     builder: (context, scribbleState, child) {
-                      final currentToolMode = widget.notifier.toolMode; // notifier에서 직접 toolMode 가져오기
+                      final currentToolMode = widget
+                          .notifier
+                          .toolMode; // notifier에서 직접 toolMode 가져오기
                       return Stack(
                         children: [
                           // 배경 레이어
@@ -189,8 +191,10 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                               fillColor: Colors.pinkAccent.withAlpha(
                                 (255 * 0.3).round(),
                               ), // LinkerGestureLayer의 linkerFillColor와 동일하게
-                              borderColor: Colors.pinkAccent, // LinkerGestureLayer의 linkerBorderColor와 동일하게
-                              borderWidth: 2.0, // LinkerGestureLayer의 linkerBorderWidth와 동일하게
+                              borderColor: Colors
+                                  .pinkAccent, // LinkerGestureLayer의 linkerBorderColor와 동일하게
+                              borderWidth:
+                                  2.0, // LinkerGestureLayer의 linkerBorderWidth와 동일하게
                             ),
                             child:
                                 Container(), // CustomPaint needs a child or size
@@ -209,7 +213,8 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                           // 링커 제스처 및 그리기 레이어 (항상 존재하며, 내부적으로 toolMode에 따라 드래그/탭 처리)
                           Positioned.fill(
                             child: LinkerGestureLayer(
-                              toolMode: currentToolMode, // toolMode를 전달하여 내부적으로 제스처 처리 결정
+                              toolMode:
+                                  currentToolMode, // toolMode를 전달하여 내부적으로 제스처 처리 결정
                               onLinkerRectanglesChanged: (rects) {
                                 setState(() {
                                   _currentLinkerRectangles = rects;
@@ -218,7 +223,8 @@ class _NotePageViewItemState extends State<NotePageViewItem> {
                               onLinkerTapped: (rect) {
                                 _showLinkerOptions(context, rect);
                               },
-                              minLinkerRectangleSize: NoteEditorConstants.minLinkerRectangleSize,
+                              minLinkerRectangleSize:
+                                  NoteEditorConstants.minLinkerRectangleSize,
                               linkerFillColor: Colors.pinkAccent,
                               linkerBorderColor: Colors.pinkAccent,
                               linkerBorderWidth: 2.0,
